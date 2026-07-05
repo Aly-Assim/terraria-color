@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Terraria Color Catalog</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <header class="hero">
+        <div>
+            <p class="eyebrow">Terraria Color</p>
+            <h1>Catalogue & recherche par couleur</h1>
+            <p class="subtitle">
+                Cherche un bloc par nom, ou choisis une couleur pour trouver les blocs Terraria les plus proches.
+            </p>
+        </div>
+    </header>
+
+    <main class="layout">
+        <section class="panel">
+            <h2>Catalogue</h2>
+            <p class="panel-text">
+                Tape un mot comme <strong>bamboo</strong>, <strong>stone</strong>, <strong>brick</strong>, <strong>moss</strong>...
+            </p>
+
+            <form method="get" class="form-block">
+                <input type="hidden" name="mode" value="catalog">
+
+                <label for="q">Nom du bloc</label>
+                <div class="row">
+                    <input
+                        id="q"
+                        name="q"
+                        type="text"
+                        value="{{ catalog_query }}"
+                        placeholder="Ex: bamboo, stone, moss..."
+                    >
+                    <button type="submit">Chercher</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel">
+            <h2>Recherche couleur</h2>
+            <p class="panel-text">
+                Choisis une couleur, puis le nombre de blocs proches que tu veux afficher.
+            </p>
+
+            <form method="get" class="form-block">
+                <input type="hidden" name="mode" value="color">
+
+                <div class="color-grid">
+                    <div>
+                        <label for="colorPicker">Color picker</label>
+                        <input
+                            id="colorPicker"
+                            class="color-picker"
+                            type="color"
+                            value="{{ color_value }}"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="colorInput">HEX</label>
+                        <input
+                            id="colorInput"
+                            name="color"
+                            type="text"
+                            value="{{ color_value }}"
+                            placeholder="#8a6a4b"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="k">Nombre de blocs</label>
+                        <input
+                            id="k"
+                            name="k"
+                            type="number"
+                            min="1"
+                            max="200"
+                            value="{{ k }}"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Preview</label>
+                        <div id="colorPreview" class="color-preview" style="background: {{ color_value }};"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="wide-button">Trouver les blocs proches</button>
+            </form>
+        </section>
+    </main>
+
+    {% if error %}
+        <section class="message error">
+            {{ error }}
+        </section>
+    {% endif %}
+
+    {% if mode == "catalog" %}
+        <section class="results-header">
+            <h2>Résultats catalogue</h2>
+            <p>
+                Recherche : <strong>{{ catalog_query }}</strong> —
+                {{ catalog_results|length }} résultat(s)
+            </p>
+        </section>
+
+        <section class="cards">
+            {% for block in catalog_results %}
+                {% include "partials_card.html" %}
+            {% endfor %}
+        </section>
+
+        {% if catalog_query and catalog_results|length == 0 %}
+            <section class="message">
+                Aucun bloc trouvé pour cette recherche.
+            </section>
+        {% endif %}
+    {% endif %}
+
+    {% if mode == "color" %}
+        <section class="results-header">
+            <h2>Blocs les plus proches</h2>
+
+            <div class="target-line">
+                <span>Couleur cible :</span>
+                <span class="mini-swatch" style="background: {{ color_value }};"></span>
+                <strong>{{ color_value }}</strong>
+
+                {% if target_rgb %}
+                    <span>RGB({{ target_rgb[0] }}, {{ target_rgb[1] }}, {{ target_rgb[2] }})</span>
+                {% endif %}
+            </div>
+
+            <p>Top {{ color_results|length }} bloc(s).</p>
+        </section>
+
+        <section class="cards">
+            {% for block in color_results %}
+                {% include "partials_card.html" %}
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    <script>
+        const colorPicker = document.getElementById("colorPicker");
+        const colorInput = document.getElementById("colorInput");
+        const colorPreview = document.getElementById("colorPreview");
+
+        function normalizeHex(value) {
+            value = value.trim();
+
+            if (!value.startsWith("#")) {
+                value = "#" + value;
+            }
+
+            return value;
+        }
+
+        if (colorPicker && colorInput && colorPreview) {
+            colorPicker.addEventListener("input", () => {
+                colorInput.value = colorPicker.value;
+                colorPreview.style.background = colorPicker.value;
+            });
+
+            colorInput.addEventListener("input", () => {
+                const value = normalizeHex(colorInput.value);
+
+                if (/^#[0-9a-fA-F]{6}$/.test(value)) {
+                    colorPicker.value = value;
+                    colorPreview.style.background = value;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Flask
+instance/
+.flaskenv
+
+# Cache / debug / raw source
+cache/
+debug/
+source/
+
+# Local backups
+data/*backup*.db
+data/*_backup.db
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

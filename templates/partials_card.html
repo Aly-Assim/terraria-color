@@ -1,0 +1,47 @@
+<article class="card">
+    <div class="image-zone">
+        {% if block.world_image_url %}
+            <img class="world-img" src="{{ block.world_image_url }}" alt="{{ block.name }}">
+        {% else %}
+            <div class="missing-image">No world image</div>
+        {% endif %}
+
+        {% if block.inventory_image_url %}
+            <img class="inventory-img" src="{{ block.inventory_image_url }}" alt="{{ block.name }} inventory">
+        {% endif %}
+    </div>
+
+    <div class="card-body">
+        <h3>{{ block.name }}</h3>
+
+        <p class="meta">
+            ID {{ block.local_id }}
+            {% if block.category_name %}
+                · {{ block.category_name }}
+            {% endif %}
+        </p>
+
+        {% if block.avg_hex %}
+            <div class="color-line">
+                <span class="mini-swatch" style="background: {{ block.avg_hex }};"></span>
+                <span>{{ block.avg_hex }}</span>
+            </div>
+        {% endif %}
+
+        {% if block.distance is not none %}
+            <p class="distance">
+                Distance : {{ "%.2f"|format(block.distance) }}
+            </p>
+        {% endif %}
+
+        {% if block.status != "ok" and block.status != "manual_fixed" %}
+            <p class="warning">
+                {{ block.status }} · {{ block.problem }}
+            </p>
+        {% endif %}
+
+        {% if block.page_url %}
+            <a class="wiki-link" href="{{ block.page_url }}" target="_blank">Wiki</a>
+        {% endif %}
+    </div>
+</article>
