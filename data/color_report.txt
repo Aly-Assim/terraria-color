@@ -18,8 +18,8 @@ max_frames_per_image : 60
 
 COUNTS
 ------
-Objets lus : 315
-Couleurs calculées : 315
+Objets lus : 307
+Couleurs calculées : 307
 Erreurs : 0
 Images manquantes : 0
 
@@ -42,7 +42,7 @@ EXEMPLES
 014 | Red Brick | correct=#8F5650 (143, 86, 80) | naive=#7D4C45 (125, 76, 69) | pixels=2288 | image_role=color_image_path
 015 | Feywood | correct=#8A5B48 (138, 91, 72) | naive=#7B4F42 (123, 79, 66) | pixels=2172 | image_role=color_image_path
 016 | Blue Dynasty Shingles | correct=#436E70 (67, 110, 112) | naive=#3E6262 (62, 98, 98) | pixels=2196 | image_role=color_image_path
-017 | Green Candy Cane Block | correct=#C78C91 (199, 140, 145) | naive=#B85D70 (184, 93, 112) | pixels=2288 | image_role=color_image_path
+017 | Green Candy Cane Block | correct=#82CA97 (130, 202, 151) | naive=#5ABC81 (90, 188, 129) | pixels=2288 | image_role=color_image_path
 018 | Ebonstone Block | correct=#584B69 (88, 75, 105) | naive=#4F425E (79, 66, 94) | pixels=2152 | image_role=color_image_path
 019 | Palm Wood | correct=#8C6F42 (140, 111, 66) | naive=#81653D (129, 101, 61) | pixels=2288 | image_role=color_image_path
 020 | Living Mahogany | correct=#8C5459 (140, 84, 89) | naive=#7D4A4E (125, 74, 78) | pixels=2148 | image_role=color_image_path

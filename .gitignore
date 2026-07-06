@@ -14,6 +14,10 @@ cache/
 debug/
 source/
 
+# Temporary merge files
+data/tmp_merge/
+data/duplicates/
+
 # Local backups
 data/*backup*.db
 data/*_backup.db
