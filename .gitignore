@@ -27,4 +27,7 @@ data/*_backup.db
 
 # OS
 .DS_Store
-Thumbs.db
+Thumbs.dbdata/manual_fix_report.txt
+data/backups/
+data/paint_lab/
+data/site_backups/
