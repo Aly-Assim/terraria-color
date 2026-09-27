@@ -1,7 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terraria Color Catalog</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -12,7 +13,8 @@
             <p class="eyebrow">Terraria Color</p>
             <h1>Catalogue & recherche par couleur</h1>
             <p class="subtitle">
-                Cherche un bloc par nom, ou choisis une couleur pour trouver les blocs Terraria les plus proches.
+                Cherche un bloc par nom, ou trouve les combinaisons bloc + peinture
+                Terraria les plus proches d'une couleur.
             </p>
         </div>
     </header>
@@ -20,14 +22,18 @@
     <main class="layout">
         <section class="panel">
             <h2>Catalogue</h2>
+
             <p class="panel-text">
-                Tape un mot comme <strong>bamboo</strong>, <strong>stone</strong>, <strong>brick</strong>, <strong>moss</strong>...
+                Tape un mot comme <strong>bamboo</strong>,
+                <strong>stone</strong>, <strong>brick</strong>,
+                <strong>moss</strong>...
             </p>
 
             <form method="get" class="form-block">
                 <input type="hidden" name="mode" value="catalog">
 
                 <label for="q">Nom du bloc</label>
+
                 <div class="row">
                     <input
                         id="q"
@@ -36,23 +42,35 @@
                         value="{{ catalog_query }}"
                         placeholder="Ex: bamboo, stone, moss..."
                     >
-                    <button type="submit">Chercher</button>
+
+                    <button type="submit">
+                        Chercher
+                    </button>
                 </div>
             </form>
         </section>
 
         <section class="panel">
             <h2>Recherche couleur</h2>
+
             <p class="panel-text">
-                Choisis une couleur, puis le nombre de blocs proches que tu veux afficher.
+                Compare la couleur cible Ã  la moyenne ou Ã  la couleur dominante
+                de chaque combinaison bloc + peinture.
             </p>
 
             <form method="get" class="form-block">
-                <input type="hidden" name="mode" value="color">
+                <input
+                    type="hidden"
+                    name="mode"
+                    value="color"
+                >
 
                 <div class="color-grid">
                     <div>
-                        <label for="colorPicker">Color picker</label>
+                        <label for="colorPicker">
+                            Color picker
+                        </label>
+
                         <input
                             id="colorPicker"
                             class="color-picker"
@@ -62,7 +80,10 @@
                     </div>
 
                     <div>
-                        <label for="colorInput">HEX</label>
+                        <label for="colorInput">
+                            HEX
+                        </label>
+
                         <input
                             id="colorInput"
                             name="color"
@@ -73,7 +94,10 @@
                     </div>
 
                     <div>
-                        <label for="k">Nombre de blocs</label>
+                        <label for="k">
+                            Nombre de rÃ©sultats
+                        </label>
+
                         <input
                             id="k"
                             name="k"
@@ -85,12 +109,123 @@
                     </div>
 
                     <div>
-                        <label>Preview</label>
-                        <div id="colorPreview" class="color-preview" style="background: {{ color_value }};"></div>
+                        <label>
+                            Preview
+                        </label>
+
+                        <div
+                            id="colorPreview"
+                            class="color-preview"
+                            style="background: {{ color_value }};"
+                        ></div>
                     </div>
                 </div>
 
-                <button type="submit" class="wide-button">Trouver les blocs proches</button>
+                <div class="search-options">
+                    <div class="option-block">
+                        <label>
+                            MÃ©thode de couleur
+                        </label>
+
+                        <div class="segmented">
+                            <label
+                                class="segment {% if color_mode == 'average' %}active{% endif %}"
+                            >
+                                <input
+                                    type="radio"
+                                    name="color_mode"
+                                    value="average"
+                                    {% if color_mode == "average" %}checked{% endif %}
+                                >
+                                Moyenne
+                            </label>
+
+                            <label
+                                class="segment {% if color_mode == 'dominant' %}active{% endif %}"
+                            >
+                                <input
+                                    type="radio"
+                                    name="color_mode"
+                                    value="dominant"
+                                    {% if color_mode == "dominant" %}checked{% endif %}
+                                >
+                                Dominante
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="option-block">
+                        <label for="paint">
+                            Peinture
+                        </label>
+
+                        <select
+                            id="paint"
+                            name="paint"
+                        >
+                            <option
+                                value="all"
+                                {% if paint_filter == "all" %}selected{% endif %}
+                            >
+                                Toutes les peintures
+                            </option>
+
+                            {% for paint in paint_options %}
+                                <option
+                                    value="{{ paint.id }}"
+                                    {% if paint_filter == paint.id|string %}selected{% endif %}
+                                >
+                                    {{ "%02d"|format(paint.id) }} Â· {{ paint.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div
+                    id="dispersionBlock"
+                    class="dispersion-block {% if color_mode == 'dominant' %}disabled{% endif %}"
+                >
+                    <div class="slider-title">
+                        <label for="dispersion">
+                            Importance de la dispersion
+                        </label>
+
+                        <strong>
+                            <span id="dispersionValue">
+                                {{ dispersion_weight }}
+                            </span> %
+                        </strong>
+                    </div>
+
+                    <input
+                        id="dispersion"
+                        name="dispersion"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value="{{ dispersion_weight }}"
+                    >
+
+                    <div class="slider-labels">
+                        <span>Ignorer</span>
+                        <span>PÃ©naliser fortement les textures dispersÃ©es</span>
+                    </div>
+
+                    <p class="help-text">
+                        UtilisÃ© uniquement en mode Moyenne. Une texture rouge + bleue
+                        qui donne une moyenne mauve sera pÃ©nalisÃ©e si ses couleurs sont
+                        trÃ¨s dispersÃ©es.
+                    </p>
+                </div>
+
+                <button
+                    type="submit"
+                    class="wide-button"
+                >
+                    Trouver les plus proches
+                </button>
             </form>
         </section>
     </main>
@@ -103,10 +238,12 @@
 
     {% if mode == "catalog" %}
         <section class="results-header">
-            <h2>Résultats catalogue</h2>
+            <h2>RÃ©sultats catalogue</h2>
+
             <p>
-                Recherche : <strong>{{ catalog_query }}</strong> —
-                {{ catalog_results|length }} résultat(s)
+                Recherche :
+                <strong>{{ catalog_query }}</strong>
+                Â· {{ catalog_results|length }} rÃ©sultat(s)
             </p>
         </section>
 
@@ -118,26 +255,58 @@
 
         {% if catalog_query and catalog_results|length == 0 %}
             <section class="message">
-                Aucun bloc trouvé pour cette recherche.
+                Aucun bloc trouvÃ© pour cette recherche.
             </section>
         {% endif %}
     {% endif %}
 
     {% if mode == "color" %}
         <section class="results-header">
-            <h2>Blocs les plus proches</h2>
+            <h2>Combinaisons les plus proches</h2>
 
             <div class="target-line">
                 <span>Couleur cible :</span>
-                <span class="mini-swatch" style="background: {{ color_value }};"></span>
+
+                <span
+                    class="mini-swatch"
+                    style="background: {{ color_value }};"
+                ></span>
+
                 <strong>{{ color_value }}</strong>
 
                 {% if target_rgb %}
-                    <span>RGB({{ target_rgb[0] }}, {{ target_rgb[1] }}, {{ target_rgb[2] }})</span>
+                    <span>
+                        RGB({{ target_rgb[0] }},
+                        {{ target_rgb[1] }},
+                        {{ target_rgb[2] }})
+                    </span>
                 {% endif %}
             </div>
 
-            <p>Top {{ color_results|length }} bloc(s).</p>
+            <div class="search-summary">
+                <span class="summary-pill">
+                    {% if color_mode == "average" %}
+                        Moyenne
+                    {% else %}
+                        Dominante
+                    {% endif %}
+                </span>
+
+                <span class="summary-pill">
+                    {{ selected_paint_name }}
+                </span>
+
+                {% if color_mode == "average" %}
+                    <span class="summary-pill">
+                        Dispersion {{ dispersion_weight }} %
+                    </span>
+                {% endif %}
+            </div>
+
+            <p>
+                Top {{ color_results|length }} combinaison(s)
+                bloc + peinture.
+            </p>
         </section>
 
         <section class="cards">
@@ -152,6 +321,14 @@
         const colorInput = document.getElementById("colorInput");
         const colorPreview = document.getElementById("colorPreview");
 
+        const dispersion = document.getElementById("dispersion");
+        const dispersionValue = document.getElementById("dispersionValue");
+        const dispersionBlock = document.getElementById("dispersionBlock");
+
+        const colorModeRadios = document.querySelectorAll(
+            'input[name="color_mode"]'
+        );
+
         function normalizeHex(value) {
             value = value.trim();
 
@@ -160,6 +337,32 @@
             }
 
             return value;
+        }
+
+        function updateColorModeUI() {
+            let selectedMode = "average";
+
+            colorModeRadios.forEach((radio) => {
+                const label = radio.closest(".segment");
+
+                if (label) {
+                    label.classList.toggle(
+                        "active",
+                        radio.checked
+                    );
+                }
+
+                if (radio.checked) {
+                    selectedMode = radio.value;
+                }
+            });
+
+            if (dispersionBlock) {
+                dispersionBlock.classList.toggle(
+                    "disabled",
+                    selectedMode === "dominant"
+                );
+            }
         }
 
         if (colorPicker && colorInput && colorPreview) {
@@ -177,6 +380,22 @@
                 }
             });
         }
+
+        if (dispersion && dispersionValue) {
+            dispersion.addEventListener("input", () => {
+                dispersionValue.textContent = dispersion.value;
+            });
+        }
+
+        colorModeRadios.forEach((radio) => {
+            radio.addEventListener(
+                "change",
+                updateColorModeUI
+            );
+        });
+
+        updateColorModeUI();
     </script>
 </body>
 </html>
+
