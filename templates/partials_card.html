@@ -4,7 +4,7 @@
             <img
                 class="world-img"
                 src="{{ block.painted_image_url }}"
-                alt="{{ block.name }} Â· {{ block.paint_name }}"
+                alt="{{ block.name }} · {{ block.paint_name }}"
                 loading="lazy"
             >
         {% elif block.world_image_url %}
@@ -43,7 +43,7 @@
             ID {{ block.local_id }}
 
             {% if block.category_name %}
-                Â· {{ block.category_name }}
+                · {{ block.category_name }}
             {% endif %}
         </p>
 
@@ -133,7 +133,7 @@
             <p class="warning">
                 {{ block.status }}
                 {% if block.problem %}
-                    Â· {{ block.problem }}
+                    · {{ block.problem }}
                 {% endif %}
             </p>
         {% endif %}

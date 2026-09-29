@@ -54,7 +54,7 @@
             <h2>Recherche couleur</h2>
 
             <p class="panel-text">
-                Compare la couleur cible Ã  la moyenne ou Ã  la couleur dominante
+                Compare la couleur cible à la moyenne ou à la couleur dominante
                 de chaque combinaison bloc + peinture.
             </p>
 
@@ -95,7 +95,7 @@
 
                     <div>
                         <label for="k">
-                            Nombre de rÃ©sultats
+                            Nombre de résultats
                         </label>
 
                         <input
@@ -124,7 +124,7 @@
                 <div class="search-options">
                     <div class="option-block">
                         <label>
-                            MÃ©thode de couleur
+                            Méthode de couleur
                         </label>
 
                         <div class="segmented">
@@ -175,7 +175,7 @@
                                     value="{{ paint.id }}"
                                     {% if paint_filter == paint.id|string %}selected{% endif %}
                                 >
-                                    {{ "%02d"|format(paint.id) }} Â· {{ paint.name }}
+                                    {{ "%02d"|format(paint.id) }} · {{ paint.name }}
                                 </option>
                             {% endfor %}
                         </select>
@@ -210,13 +210,13 @@
 
                     <div class="slider-labels">
                         <span>Ignorer</span>
-                        <span>PÃ©naliser fortement les textures dispersÃ©es</span>
+                        <span>Pénaliser fortement les textures dispersées</span>
                     </div>
 
                     <p class="help-text">
-                        UtilisÃ© uniquement en mode Moyenne. Une texture rouge + bleue
-                        qui donne une moyenne mauve sera pÃ©nalisÃ©e si ses couleurs sont
-                        trÃ¨s dispersÃ©es.
+                        Utilisé uniquement en mode Moyenne. Une texture rouge + bleue
+                        qui donne une moyenne mauve sera pénalisée si ses couleurs sont
+                        très dispersées.
                     </p>
                 </div>
 
@@ -238,12 +238,12 @@
 
     {% if mode == "catalog" %}
         <section class="results-header">
-            <h2>RÃ©sultats catalogue</h2>
+            <h2>Résultats catalogue</h2>
 
             <p>
                 Recherche :
                 <strong>{{ catalog_query }}</strong>
-                Â· {{ catalog_results|length }} rÃ©sultat(s)
+                · {{ catalog_results|length }} résultat(s)
             </p>
         </section>
 
@@ -255,7 +255,7 @@
 
         {% if catalog_query and catalog_results|length == 0 %}
             <section class="message">
-                Aucun bloc trouvÃ© pour cette recherche.
+                Aucun bloc trouvé pour cette recherche.
             </section>
         {% endif %}
     {% endif %}

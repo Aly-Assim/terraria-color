@@ -1,33 +1,38 @@
-# Python
+# Python and local environments
 .venv/
+.venv-*/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 
-# Flask
+# Local Flask settings and credentials
 instance/
+.env
+.env.*
+!.env.example
 .flaskenv
 
-# Cache / debug / raw source
+# Local acquisition inputs, caches, previews, and reports
+source/
 cache/
 debug/
-source/
-
-# Temporary merge files
 data/tmp_merge/
 data/duplicates/
-
-# Local backups
-data/*backup*.db
-data/*_backup.db
-
-# Logs
-*.log
-
-# OS
-.DS_Store
-Thumbs.dbdata/manual_fix_report.txt
 data/backups/
-data/paint_lab/
 data/site_backups/
+data/*backup*.db
+data/*_report.txt
+data/report.txt
+*.log
+*.tmp
+*.bak
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# images/painted/ and the curated database are intentionally published.

@@ -1,24 +1,16 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from io import BytesIO
 from pathlib import Path
 import math
 import sqlite3
-import sys
 
 from flask import Flask, abort, render_template, request, send_file, url_for
 from PIL import Image
 
 
-PROJECT_ROOT = Path(__file__).parent.resolve()
-DB_PATH = PROJECT_ROOT / "data" / "terraria_blocks.db"
-IMAGES_ROOT = PROJECT_ROOT / "images"
-PAINT_SHADER_DIR = PROJECT_ROOT / "scripts" / "paint_shader"
-
-if str(PAINT_SHADER_DIR) not in sys.path:
-    sys.path.insert(0, str(PAINT_SHADER_DIR))
-
-from terraria_paint_shader import PAINTS, apply_paint
+from scripts.paths import PROJECT_ROOT, DB_PATH, IMAGES_ROOT, connect_readonly
+from scripts.paint.renderer import PAINTS, apply_paint
 
 
 app = Flask(__name__)
@@ -38,7 +30,7 @@ def connect_db():
             "BDD introuvable : data/terraria_blocks.db"
         )
 
-    connection = sqlite3.connect(DB_PATH)
+    connection = connect_readonly(DB_PATH)
     connection.row_factory = sqlite3.Row
     return connection
 
@@ -264,7 +256,7 @@ def hex_to_rgb(hex_color):
         value = "".join(char * 2 for char in value)
 
     if len(value) != 6:
-        raise ValueError("La couleur HEX doit avoir 6 caractÃ¨res.")
+        raise ValueError("La couleur HEX doit avoir 6 caractères.")
 
     try:
         r = int(value[0:2], 16)
@@ -585,7 +577,7 @@ def search_by_color(
                 (
                     "La table object_paint_colors est introuvable ou "
                     "incompatible. Lance "
-                    "python scripts/build_paint_color_db.py"
+                    "python scripts/build/build_paint_colors.py"
                 ),
             )
 
@@ -858,5 +850,5 @@ def index():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
 
