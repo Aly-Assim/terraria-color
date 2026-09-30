@@ -1,32 +1,49 @@
-# Attribution and licensing status
+# Third-Party Notices
 
-Terraria and its game artwork are associated with Re-Logic. This repository does
-not claim authorship or ownership of Terraria sprites, textures, names, or other
-game assets. This is an independent community project, not an official Re-Logic
-product.
+Terraria and related game content are the property of Re-Logic.
 
-The assets in `images/world/`, `images/inventory/`, and `images/color/`, and their
-painted derivatives in `images/painted/`, are distinct from this project's Python,
-HTML, and CSS source code. A future source-code license must not be presented as
-a license grant for those third-party assets. Database and CSV fields retain
-source-page and image URLs where available.
+Terraria Color is an independent community project and is not affiliated with,
+endorsed by, or sponsored by Re-Logic.
 
-The paint renderer's existing implementation describes its formulas as derived
-from a Terraria `TileShader.xnb` reference. No extracted shader binary is included
-in the public source tree.
+## Project source code
 
-## Release TODOs for the maintainer
+Unless otherwise stated, the original source code in this repository is provided
+under the MIT License. See the `LICENSE` file for the full license text.
 
-- Choose a source-code license and add its actual text in `LICENSE`. No license
-  has been selected on the maintainer's behalf.
-- Verify the permission and attribution requirements for distributing Terraria
-  images and painted derivatives, including assets obtained through the wiki.
-- Establish the applicable terms for the database, metadata, and CSV exports
-  separately from the code and image assets.
-- Record the game/reference version and any required third-party notices after
-  checking the original sources. The source workbook filename alone is not
-  sufficient evidence of the version of every asset or shader formula.
+The MIT License applies only to original code and documentation created for
+Terraria Color. It does not grant rights to third-party game assets, trademarks,
+external datasets, or other material owned by their respective rights holders.
 
-This notice records the repository's current attribution intent and open release
-questions; it does not assert redistribution permission or grant rights held by
-third parties.
+## Terraria assets
+
+This repository contains or references Terraria-related images used by the
+project, including source images and generated painted variants.
+
+Terraria sprites, textures, names, and other game assets remain the property of
+their respective rights holders. Their presence in this repository does not
+imply that they are licensed under the MIT License.
+
+Terraria Color does not claim ownership of these assets.
+
+## External source data
+
+Some catalogue data used during acquisition and maintenance comes from external
+community resources and the Official Terraria Wiki.
+
+The local source workbook used by the import tools is not distributed with this
+repository. Its origin and setup instructions are documented separately in
+`source/README.md`.
+
+Source-page and image URLs are retained in the project data where available to
+help preserve provenance.
+
+## Paint rendering
+
+The paint-rendering implementation was developed from analysis of Terraria's
+paint rendering behavior. No extracted Terraria shader binary is distributed as
+part of the public source code.
+
+## Trademarks
+
+Terraria and Re-Logic are trademarks or names belonging to their respective
+owners. All other third-party names and marks belong to their respective owners.
