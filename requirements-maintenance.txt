@@ -1,4 +1,4 @@
-# Optional historical acquisition tools
+# Optional workbook acquisition and wall maintenance tools
 -r requirements.txt
 beautifulsoup4==4.15.0
 openpyxl==3.1.5

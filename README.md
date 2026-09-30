@@ -5,7 +5,7 @@ Terraria Color is a small local Flask app backed by a curated SQLite catalog. It
 lets builders compare textures instead of guessing which block and paint will
 work in a palette.
 
-- Browse blocks by name or category, with inventory/world images and wiki links.
+- Browse blocks and background walls by name or category, with inventory/world images and wiki links.
 - Search 9,517 block × paint combinations using Average or Dominant color.
 - Rank colors by perceptual OKLab distance and optionally penalize varied textures.
 - Preview all 31 paint states through the same offline renderer used by the tools.
@@ -30,7 +30,7 @@ The built-in server listens locally; debug mode is off by default.
 For subsequent runs, activate the environment and run `python app.py`.
 
 Runtime dependencies are Flask, NumPy, and Pillow. Their transitive dependencies
-are installed by pip. Optional historical acquisition tools have a separate
+are installed by pip. Optional acquisition and maintenance tools have a separate
 `requirements-maintenance.txt`; they are not part of normal setup.
 
 ## Search and color analysis
@@ -259,10 +259,13 @@ cannot be launched against the curated release through their normal entry points
 
 ## Contributing and attribution
 
-Wall support is prepared without importing any wall data yet. Both search forms
-offer Tous / Blocs / Murs, and future wall assets have separate directories.
-See [adding walls](docs/adding-walls.md) for stable IDs, image paths, the shared
-paint renderer, and the next import stage. The existing block dataset is unchanged.
+Background walls are imported from the external workbook into separate image
+directories using a staged, append-only importer. Both search forms offer Tous /
+Blocs / Murs. Raw walls await manual curation and derived color builds before
+appearing in color search. See [adding walls](docs/adding-walls.md) and
+[wall maintenance](docs/maintenance.md#wall-curation). Existing blocks are preserved.
+For visual classification with images, issue queues and duplicate pairs, run
+`python scripts/maintenance/curate_walls.py` (maintenance dependencies required).
 
 Keep the project small, preserve existing color algorithms, and run the safe
 tests before submitting changes. Do not include local caches, private reports,

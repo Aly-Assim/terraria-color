@@ -1,10 +1,14 @@
-# Reserved wall image inputs
+# Wall image inputs
 
-No wall assets have been imported yet. Future wall resources belong under:
+Raw wall resources imported from the private workbook and official wiki:
 
 - `images/walls/world/`: placed wall textures
 - `images/walls/inventory/`: inventory icons
-- `images/walls/color/`: analysis textures
+- `images/walls/color/`: separate byte-for-byte copies of placed textures for analysis
 
 Do not put new files in the immutable block directories `images/world/` or
-`images/inventory/`. See `docs/adding-walls.md` for the database contract.
+`images/inventory/`, or overwrite existing `images/color/` files.
+See [the import workflow](../../docs/adding-walls.md) and
+[import report](../../data/wall_import_report.csv). These raw assets await manual
+curation. Terraria/Re-Logic assets are distinct from the project's code; see
+[NOTICE](../../NOTICE.md).

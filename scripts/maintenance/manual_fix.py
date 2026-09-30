@@ -960,6 +960,11 @@ def prompt_for_row(connection, row, actions):
 
 
 def main():
+    wall_mode = "--type=wall" in sys.argv or (
+        "--type" in sys.argv and sys.argv[sys.argv.index("--type") + 1:][:1] == ["wall"])
+    if wall_mode:
+        from scripts.maintenance.manual_walls import main as wall_main
+        return wall_main()
     protect_curated_release()
     setup_dirs()
 

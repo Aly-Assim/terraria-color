@@ -15,6 +15,11 @@ def fixture_connection():
     connection.row_factory = sqlite3.Row
     with connect_readonly() as source:
         source.backup(connection)
+    # Isolate the synthetic fixture from the acquired wall catalogue.
+    for table in ("object_colors", "object_paint_colors", "object_wall_ids"):
+        if connection.execute("SELECT 1 FROM sqlite_master WHERE name=?", (table,)).fetchone():
+            connection.execute(f"DELETE FROM {table} WHERE local_id IN (SELECT local_id FROM objects WHERE object_type='wall')")
+    connection.execute("DELETE FROM objects WHERE object_type='wall'")
     row = dict(connection.execute("SELECT * FROM objects WHERE local_id = 0").fetchone())
     wall_id = connection.execute("SELECT MAX(local_id) + 1 FROM objects").fetchone()[0]
     row.update(local_id=wall_id, object_type="wall", is_wall=1,

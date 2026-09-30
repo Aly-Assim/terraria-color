@@ -1,65 +1,140 @@
-# Wall catalog preparation
+# Importing background walls
 
-This is infrastructure only. No wall records, images, or derived colors have
-been added, and no import workflow is enabled yet.
+The importer reads the private workbook described in [source/README.md](../source/README.md).
+Obtain it separately at `source/all_items_terraria_145.xlsx`; never commit it.
+The wiki enriches the workbook list and never adds extra catalogue objects.
 
-## Existing schema, shared renderer
+## Inspected source
 
-Use the existing `objects` table with `object_type = 'wall'` and `is_wall = 1`.
-Blocks retain `object_type = 'block'` and `is_wall = 0`. No schema migration is
-needed. The maintainer confirmed that blocks and walls share the paint formulas;
-both therefore use `scripts/paint/renderer.py` without separate algorithms.
+The workbook has 15 sheets. `Walls` occupies 46 rows and 40 columns, containing
+292 entries without duplicate normalized names. Category headings are in row 1;
+each entry is a name, adjacent `=IMAGE("https://...")` formula, and checkbox.
+Checkboxes do not filter the import. This matches the historical block reader's
+layout, but duplicate source names cause an explicit error instead of collapsing.
 
-`local_id` must be globally unique across blocks and walls because derived tables
-and preview URLs use it as their object key. Preserve existing block IDs 0–306.
-Allocate new wall IDs above the current maximum at import time, without assuming
-that Terraria's internal item/tile IDs are local IDs.
+| Category | Entries |
+| --- | ---: |
+| Soil Walls | 35 |
+| Dungeon Walls | 10 |
+| Wood Walls | 30 |
+| Stone Walls | 38 |
+| Brick Walls | 30 |
+| Gem Walls | 28 |
+| Decorative Walls | 44 |
+| Metal Walls | 40 |
+| Wallpaper | 22 |
+| Unsafe Walls | 15 |
 
-## Image paths
+## Acquisition commands (PowerShell)
 
-Store repository-relative paths with forward slashes:
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements-maintenance.txt
+python scripts/maintenance/import_walls.py --dry-run
+python scripts/maintenance/import_walls.py --sample
+python scripts/maintenance/import_walls.py
+```
 
-| Database field | Future wall directory |
-| --- | --- |
-| `world_image_path` | `images/walls/world/` |
-| `inventory_image_path` | `images/walls/inventory/` |
-| `color_image_path` | `images/walls/color/` |
+These are acquisition commands, not website setup prerequisites.
 
-Use a globally unique local-ID prefix in each filename. The existing
-`world_image_path` field means a placed texture for either type; it does not
-require that a wall live in the block image directory. Supply the three image
-roles before considering a wall ready for release.
+- Dry-run resolves all names and writes `cache/walls/dry_run.csv`; canonical data stays untouched.
+- Sample downloads Stone Wall, Topaz Stone Wall, Crimstone Wall, Natural Dirt Wall
+  and animated Cog Wall. It appends to a temporary database copy under ignored
+  `cache/walls/sample_*/`, validates images, and prints a detailed report.
+- The default command repeats this sample gate using cached responses, stages pending
+  downloads, then appends in one transaction. Existing source keys are skipped,
+  preserving manual edits. Deleted objects can be imported again: do not rerun
+  acquisition after merging unless you intend to restore those source entries.
+- `--force-refresh-cache` refreshes wiki responses. Requests use a descriptive
+  User-Agent, a minimum half-second interval, and persistent page/media caching.
 
-Painted wall variants will use `images/painted/walls/<source_stem>/`.
-Block export paths remain unchanged. The common manifest retains its existing
-columns and globally unique local IDs; wall variant paths carry the `walls/`
-prefix. The shared HTML index can display both types.
+Full imports write `data/wall_import_report.csv`, intentionally published with the
+images. Source names, cell coordinates, media URLs, IDs, status and problems are
+preserved there. Failed resolutions are reported and not inserted. Missing media
+remain NULL paths with review problems; no sprite is invented. Already imported
+incomplete rows also stay untouched on rerun; use the manual editor for repairs.
 
-## Search and derived data
+## Resolution and files
 
-Both catalog and color search accept `object_type=all`, `block`, or `wall`.
-The UI exposes the same filter in both forms. The default remains all, which
-currently returns only blocks. An empty wall search is expected until import.
+`wall_source.py` reads the workbook and resolves exact-name wiki infoboxes, image
+filenames, Item ID rows and Wall ID rows. Group-page ID ranges are never assigned
+positionally. Cursed Dungeon variants use the exact Shimmer output/input row,
+matching workbook texture and corresponding unsafe ID. A source-name alias is
+accepted only when confirmed by the wall index, and is flagged for review.
 
-The existing color builders already iterate all objects and use their stored
-paths, so they need no wall-specific formula or table. The painted export now
-resolves wall sources within their own directory. Once wall records and images
-are approved, their derived color rows will need to be built before color search
-and painted previews work. Do not run builds as part of this preparation.
+Original PNG/GIF bytes and transparency are retained. Naming follows the blocks:
 
-The full derived-color rebuild replaces the corresponding derived table, and
-dispersion normalization is shared across all included objects. Adding walls can
-therefore change normalized dispersion and Average rankings for blocks in a
-future rebuild. The preserved database is unchanged by this preparation.
+```text
+images/walls/inventory/<local_id>_<slug>_inventory.<ext>
+images/walls/world/<local_id>_<slug>_world.<ext>
+images/walls/color/<local_id>_<slug>_color.<ext>
+```
 
-## Next stage (awaiting maintainer instructions)
+Color is a separate byte-for-byte copy of world media. Existing files are never
+overwritten by the importer. Ambiguity and missing media are reported explicitly.
 
-Decide the wall list, source/curation process, and image naming details, then
-implement a dedicated reviewed importer with stable IDs and backups. Do not
-reactivate the historical acquisition or duplicate-merge tools: they can replace
-block images and renumber records.
+## Database and safety
 
-Safe checks: `python tests/run_tests.py`. Wall-search tests use an in-memory
-SQLite fixture and never insert records into the shipped database. Release
-validation retains the original block-ID and immutable-image checks while
-allowing additional complete wall records.
+Walls use `object_type='wall'`, `is_wall=1`, and IDs allocated from MAX(local_id)+1.
+The nullable `internal_wall_id` holds the main placed ID: the unique safe ID for
+normal walls, or the unsafe ID for an explicitly unsafe variant.
+`object_wall_ids(local_id, wall_id, is_safe, internal_name)` preserves additional
+verified IDs; `is_safe` may be NULL. `internal_tile_id` stays NULL for walls.
+The stable source key is `workbook:Walls:<normalized source name>`.
+
+Before appending, SQLite is backed up under `data/backups/`, all original object
+rows/count/MAX ID are recorded, and every existing block inventory/world/color
+file is hashed. Before commit, original rows and hashes, new paths/roles/IDs,
+image decoding, row counts, foreign keys and SQLite integrity are checked.
+Exceptions roll back SQL and remove only files created by that operation.
+Hard process/power interruption may leave orphan wall files; validation reports
+these and subsequent imports refuse to overwrite them.
+
+## After acquisition
+
+The initial acquisition on 2026-09-30 inserted all 292 source walls at local IDs
+307–598: 292 inventory files, 292 world files and 292 color copies. There were no
+failed entries, missing media or ambiguous resolutions. 141 entries resolve on
+grouped pages, including Gemstone Walls, Cave Walls, Sandstone Walls, Wallpapers
+and Dungeon Brick Walls. Three source aliases remain explicitly flagged:
+
+| Local ID | Source name | Wiki-resolved name |
+| ---: | --- | --- |
+| 344 | Tin Plating Fence | Tin Plating Wall |
+| 408 | Spooky Wood | Spooky Wood Wall |
+| 439 | Flinx Fur Block | Flinx Fur Wall |
+
+The five staged sample entries all passed image and database checks. The 307
+original object rows and 921 existing block image filenames/SHA-256 hashes were
+unchanged. Original base-color and paint-color table contents were also compared
+and remained identical. The workbook was unchanged and remains Git-ignored.
+The pre-import database and row/hash snapshot are stored locally under
+`data/backups/wall_import_20260930T154145336080Z/`.
+
+Implementation files are `scripts/maintenance/import_walls.py`, `wall_source.py`
+and `wall_storage.py`; curation adds `validate_catalog.py`, `manual_walls.py` and
+`merge_walls.py`, and extends `find_duplicates.py` and the `manual_fix.py` dispatcher.
+The original destructive merger remains guarded. Tests add `test_wall_import.py`
+and extend `test_walls.py`, `test_dataset.py` and `run_tests.py`. README, maintenance
+documentation, wall-image README and optional-dependency comments were updated.
+Data changes are the appended database, import CSV and 876 new wall image files.
+
+Follow [wall curation](maintenance.md#wall-curation). No fixing, merging, color
+building or paint generation is performed automatically. Raw walls are browsable
+in the catalogue but require derived colors before color search/painted previews.
+The shared paint and color algorithms are unchanged. Future paint exports use
+`images/painted/walls/<source_stem>/`. A future full color rebuild normalizes
+dispersion across blocks and walls together, which can affect Average rankings.
+
+For the guided visual classification, run `python scripts/maintenance/curate_walls.py`.
+It shows issues before duplicate pairs and saves decisions for resuming. Wall IDs
+remain stable throughout review; an explicit finalization can renumber only walls
+once both pending work CSVs are empty, updating files and references together.
+
+Offline fixture tests (maintenance dependencies required):
+
+```powershell
+python tests/test_wall_import.py
+# Alternatively include them in the existing suite:
+python tests/run_tests.py --maintenance
+```

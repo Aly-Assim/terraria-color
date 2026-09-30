@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Classification des murs · Terraria Color</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='review.css') }}">
+</head>
+<body>
+{% macro hidden() -%}
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="revision" value="{{ review.revision }}">
+{%- endmacro %}
+<main>
+  <header><div><a class="brand" href="/">Terraria Color</a><h1>Classification des murs</h1></div>
+    <div class="counts"><span>{{ review.issues|length }} problèmes</span><span>{{ review.pairs|length }} paires</span><span>{{ review.rows|length }} murs</span></div>
+  </header>
+  <nav aria-label="Étapes"><span class="{{ 'active' if kind == 'issue' }}">1. Problèmes</span><span class="{{ 'active' if kind == 'pair' }}">2. Doublons</span><span class="{{ 'active' if kind == 'done' }}">3. Finalisation</span></nav>
+  {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+  {% if kind == 'issue' %}
+    <section class="notice"><h2>{% if current.local_id is not none %}Mur #{{ current.local_id }} · {{ current.name }}{% else %}Fichier non référencé{% endif %}</h2>
+      <p>{{ current.problem }}</p><p class="muted">{{ current.role }} · {{ current.path }} · {{ current.sources }}</p>
+      <p>Corrige les champs ci-dessous, ou accepte explicitement ce signalement avec une note.</p>
+    </section>
+  {% elif kind == 'pair' %}
+    <section class="notice"><h2>Comparer #{{ current.left_id }} et #{{ current.right_id }}</h2><p>{{ current.reason }}</p>
+      <p>Une texture identique ne signifie pas forcément le même objet. Vérifie notamment les variantes sûres/dangereuses et les sprites d’inventaire.</p>
+    </section>
+  {% endif %}
+
+  <div class="cards {{ 'single' if rows|length == 1 }}">
+  {% for row in rows %}
+    <article>
+      <h2><span class="muted">#{{ row.local_id }}</span> {{ row.name }}</h2>
+      <p class="muted">{{ row.category_name }} · Item ID : {{ row.internal_item_id if row.internal_item_id is not none else '—' }} · Wall ID : {{ row.internal_wall_id if row.internal_wall_id is not none else '—' }}</p>
+      <div class="previews">
+      {% for role in ('world', 'inventory') %}
+        <figure><div class="checker">
+          {% if row[role + '_image_path'] %}<img src="{{ url_for('image', local_id=row.local_id, role=role) }}" alt="{{ role }} — {{ row.name }}">{% else %}<span>Image absente</span>{% endif %}
+        </div><figcaption>{{ 'Dans le monde' if role == 'world' else 'Inventaire' }}</figcaption></figure>
+      {% endfor %}
+      </div>
+      <p class="link"><strong>Wiki</strong> <a href="{{ row.page_url|safe_link }}" target="_blank" rel="noreferrer">{{ row.page_url or 'URL absente' }}</a></p>
+      {% for role in roles %}<p class="link"><strong>{{ role }}</strong> <a href="{{ row[role + '_image_url']|safe_link }}" target="_blank" rel="noreferrer">{{ row[role + '_image_url'] or 'URL absente' }}</a><small>{{ row[role + '_image_path'] or 'Chemin absent' }}</small></p>{% endfor %}
+      <details {{ 'open' if kind == 'issue' }}><summary>Corriger ce mur</summary>
+        <form method="post" action="{{ url_for('action') }}">
+          {{ hidden() }}<input type="hidden" name="local_id" value="{{ row.local_id }}">
+          <label>Page wiki<input type="url" name="page_url" value="{{ row.page_url or '' }}"></label>
+          {% for role in roles %}<label>URL {{ role }}<input type="url" name="{{ role }}" value="{{ row[role + '_image_url'] or '' }}" placeholder="https://terraria.wiki.gg/images/…"></label><label class="check"><input type="checkbox" name="reload_{{ role }}" value="1"> Réappliquer cette image {{ role }}, même URL</label>{% endfor %}
+          <div class="fields"><label>Statut<input name="status" value="{{ row.status }}" required></label><label>Problème<input name="problem" value="{{ row.problem or '' }}"></label></div>
+          <p class="muted">Pour remplacer world et color ensemble, colle la même URL dans les deux champs. Une URL vide ne supprime pas une image.</p>
+          <button name="action" value="edit">Enregistrer les corrections</button>
+          <button class="secondary" name="action" value="metadata">Relire les IDs sur le wiki</button>
+        </form>
+      </details>
+    </article>
+  {% endfor %}
+  </div>
+  {% if kind == 'issue' and current.problem == 'orphan_file' %}
+    <article><div class="checker orphan"><img src="{{ url_for('orphan', key=current.key) }}" alt="{{ current.path }}"></div>
+      <form method="post" action="{{ url_for('action') }}">{{ hidden() }}<button class="danger" name="action" value="delete_orphan">Sauvegarder puis supprimer ce fichier non référencé</button></form>
+    </article>
+  {% endif %}
+  {% if kind != 'done' %}
+  <section class="decisions">
+    {% if kind == 'pair' %}
+      <form method="post" action="{{ url_for('action') }}">{{ hidden() }}
+        <button name="action" value="keep_left">Garder #{{ current.left_id }} · supprimer #{{ current.right_id }}</button>
+        <button name="action" value="keep_right">Garder #{{ current.right_id }} · supprimer #{{ current.left_id }}</button>
+        <button class="secondary" name="action" value="distinct">Garder les deux : objets distincts</button>
+      </form>
+    {% else %}
+      <form method="post" action="{{ url_for('action') }}">{{ hidden() }}
+        <label>Motif d’acceptation<input name="note" required placeholder="Ex. variante volontaire, absence d’inventaire attendue…"></label>
+        <button class="secondary" name="action" value="accept">Accepter ce signalement et continuer</button>
+      </form>
+    {% endif %}
+    <form method="post" action="{{ url_for('action') }}">{{ hidden() }}<button class="secondary" name="action" value="later">Plus tard — laisser en attente</button></form>
+    <p class="muted">Les corrections et suppressions choisies sont sauvegardées immédiatement. Les IDs restants ne changent qu’à la finalisation. Pour arrêter : ferme l’onglet puis Ctrl+C dans le terminal.</p>
+  </section>
+  {% else %}
+    <section class="notice complete">
+      {% if review.state.finalized %}<h2>Classification finalisée</h2><p>Les IDs des murs et leurs références sont à jour. Correspondance : <code>data/duplicates/wall_review/id_map.csv</code>.</p>
+      {% else %}<h2>Toutes les lignes ont été traitées</h2><p>Les CSV de travail <code>issues.csv</code> et <code>pairs.csv</code> sont vides. Tu peux maintenant renuméroter uniquement les murs après le dernier ID de bloc. Une sauvegarde sera créée ; les images et IDs des blocs restent inchangés.</p>
+        <form method="post" action="{{ url_for('action') }}">{{ hidden() }}<button name="action" value="finalize">Finaliser et renuméroter les murs</button></form>
+      {% endif %}
+    </section>
+  {% endif %}
+  <footer>Progression enregistrée dans <code>data/duplicates/wall_review/</code>. Les CSV d’import historiques ne sont pas des files de travail à vider. Aucun calcul de couleurs ni export de peintures ici.</footer>
+</main>
+</body>
+</html>

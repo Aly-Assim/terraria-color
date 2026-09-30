@@ -23,17 +23,24 @@ def main() -> None:
             assert connection.execute(
                 f"SELECT COUNT(*) FROM {table} WHERE error IS NOT NULL"
             ).fetchone()[0] == 0, f"Errors in {table}"
-        assert {row[0] for row in connection.execute("SELECT local_id FROM object_colors")} == {obj["local_id"] for obj in objects}
+        # Newly acquired walls intentionally await manual curation/color builds.
+        object_ids = {obj["local_id"] for obj in objects}
+        color_ids = {row[0] for row in connection.execute("SELECT local_id FROM object_colors")}
+        assert block_ids <= color_ids <= object_ids
         combinations = set(map(tuple, connection.execute(
             "SELECT local_id, paint_id FROM object_paint_colors"
         )))
         expected = {(obj["local_id"], paint) for obj in objects for paint in PAINTS}
-        assert combinations == expected, "Missing or unexpected paint-color combinations"
+        block_combinations = {(local_id, paint) for local_id in block_ids for paint in PAINTS}
+        assert block_combinations <= combinations <= expected, "Missing block or unexpected paint combinations"
         for obj in objects:
             for field in ("world_image_path", "inventory_image_path", "color_image_path"):
+                if obj[field] is None:
+                    assert obj["object_type"] == "wall" and obj["status"] != "ok", "Unreported missing media"
+                    continue
                 path = PROJECT_ROOT / obj[field].replace("\\", "/")
                 assert path.is_file(), f"Missing {field}: {path}"
-    print(f"[PASS] SQLite integrity, {len(objects)} objects, {len(expected)} combinations, and source paths")
+    print(f"[PASS] SQLite integrity, {len(objects)} objects, {len(combinations)} built combinations, and source paths")
 
     expected_hashes = {}
     for line in (PROJECT_ROOT / "data" / "immutable_images.sha256").read_text(encoding="utf-8").splitlines():

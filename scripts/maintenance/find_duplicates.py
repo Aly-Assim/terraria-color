@@ -5,7 +5,8 @@ from pathlib import Path
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from scripts.paths import PROJECT_ROOT, DB_PATH
+from scripts.paths import PROJECT_ROOT, DB_PATH, connect_readonly
+import argparse
 import csv
 import hashlib
 import sqlite3
@@ -36,9 +37,7 @@ def connect_db():
     if not DB_PATH.exists():
         raise FileNotFoundError(f"BDD introuvable : {DB_PATH}")
 
-    connection = sqlite3.connect(DB_PATH)
-    connection.row_factory = sqlite3.Row
-    return connection
+    return connect_readonly(DB_PATH)
 
 
 def trim_transparent(image):
@@ -84,13 +83,16 @@ def pixel_signature(image_path):
     }
 
 
-def load_objects():
+def load_objects(object_type="all"):
+    if object_type not in {"all", "block", "wall"}:
+        raise ValueError("Expected block, wall or all")
     connection = connect_db()
     cursor = connection.cursor()
 
     cursor.execute("""
         SELECT
             local_id,
+            object_type,
             name,
             category_name,
             page_url,
@@ -98,9 +100,9 @@ def load_objects():
             world_image_path,
             color_image_path
         FROM objects
-        WHERE world_image_path IS NOT NULL
+        WHERE world_image_path IS NOT NULL AND (? = 'all' OR object_type = ?)
         ORDER BY local_id
-    """)
+    """, (object_type, object_type))
 
     rows = [dict(row) for row in cursor.fetchall()]
     connection.close()
@@ -108,18 +110,22 @@ def load_objects():
     return rows
 
 
-def find_duplicate_groups(objects):
+def find_duplicate_groups(objects, root=None):
+    root = root or PROJECT_ROOT
     buckets = {}
     errors = []
 
     for row in objects:
-        world_path = resolve_project_path(row.get("world_image_path"))
+        relative = row.get("world_image_path")
+        world_path = (root / normalize_path(relative)).resolve() if relative else None
 
         if world_path is None or not world_path.exists():
             errors.append(f"[{row['local_id']}] {row['name']} | image world introuvable : {row.get('world_image_path')}")
             continue
 
         try:
+            expected = root / "images" / ("walls/world" if row["object_type"] == "wall" else "world")
+            world_path.relative_to(expected.resolve())
             signature = pixel_signature(world_path)
         except Exception as error:
             errors.append(f"[{row['local_id']}] {row['name']} | erreur image : {error}")
@@ -157,6 +163,7 @@ def save_duplicate_groups_csv(groups):
         writer.writerow([
             "group_id",
             "local_id",
+            "object_type",
             "name",
             "category_name",
             "inventory_image_path",
@@ -174,6 +181,7 @@ def save_duplicate_groups_csv(groups):
                 writer.writerow([
                     group_index,
                     item["local_id"],
+                    item["object_type"],
                     item["name"],
                     item.get("category_name"),
                     normalize_path(item.get("inventory_image_path")),
@@ -188,11 +196,14 @@ def save_duplicate_groups_csv(groups):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Read-only exact pixel duplicate discovery")
+    parser.add_argument("--type", choices=("block", "wall", "all"), default="all")
+    args = parser.parse_args()
     print("FIND DUPLICATES")
     print("===============")
     print()
 
-    objects = load_objects()
+    objects = load_objects(args.type)
 
     print(f"Images world à analyser : {len(objects)}")
     print("Comparaison pixels exacts après crop transparent...")
@@ -217,7 +228,7 @@ def main():
     if groups:
         print()
         print("Prochaine étape :")
-        print("python scripts/maintenance/merge_duplicates.py")
+        print("Review the CSV manually. Wall merging: python scripts/maintenance/merge_walls.py --help")
     else:
         print()
         print("Aucun duplicate pixel exact trouvé.")
