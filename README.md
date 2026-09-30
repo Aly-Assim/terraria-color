@@ -130,7 +130,6 @@ can render previews in memory and does not require writing new files.
 ```text
 Terraria Color/
 ├── app.py
-├── run.ps1
 ├── README.md
 ├── LICENSE
 ├── NOTICE.md
