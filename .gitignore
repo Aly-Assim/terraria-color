@@ -17,7 +17,8 @@ instance/
 .flaskenv
 
 # Local acquisition inputs, caches, previews, and reports
-source/
+source/*
+!source/README.md
 cache/
 debug/
 data/tmp_merge/
