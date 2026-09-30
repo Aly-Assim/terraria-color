@@ -14,12 +14,16 @@ def main() -> None:
         assert connection.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
         assert not connection.execute("PRAGMA foreign_key_check").fetchall()
         objects = connection.execute("SELECT * FROM objects").fetchall()
-        assert len(objects) == 307, "Unexpected curated object count"
+        block_ids = {obj["local_id"] for obj in objects if obj["object_type"] == "block"}
+        assert set(range(307)) <= block_ids, "Original block IDs must be preserved"
+        for obj in objects:
+            assert obj["object_type"] in {"block", "wall"}
+            assert obj["is_wall"] == int(obj["object_type"] == "wall")
         for table in ("object_colors", "object_paint_colors"):
             assert connection.execute(
                 f"SELECT COUNT(*) FROM {table} WHERE error IS NOT NULL"
             ).fetchone()[0] == 0, f"Errors in {table}"
-        assert connection.execute("SELECT COUNT(*) FROM object_colors").fetchone()[0] == 307
+        assert {row[0] for row in connection.execute("SELECT local_id FROM object_colors")} == {obj["local_id"] for obj in objects}
         combinations = set(map(tuple, connection.execute(
             "SELECT local_id, paint_id FROM object_paint_colors"
         )))
@@ -29,7 +33,7 @@ def main() -> None:
             for field in ("world_image_path", "inventory_image_path", "color_image_path"):
                 path = PROJECT_ROOT / obj[field].replace("\\", "/")
                 assert path.is_file(), f"Missing {field}: {path}"
-    print("[PASS] SQLite integrity, 307 objects, 9517 combinations, and source paths")
+    print(f"[PASS] SQLite integrity, {len(objects)} objects, {len(expected)} combinations, and source paths")
 
     expected_hashes = {}
     for line in (PROJECT_ROOT / "data" / "immutable_images.sha256").read_text(encoding="utf-8").splitlines():
@@ -56,7 +60,7 @@ def main() -> None:
         path.relative_to(PAINTED_ROOT)
         assert path.is_file(), f"Missing painted image: {path}"
         paths.add(path)
-    actual_paths = {p.resolve() for p in PAINTED_ROOT.glob("*/*.png") if not p.name.startswith("_")}
+    actual_paths = {p.resolve() for p in PAINTED_ROOT.rglob("*.png") if not p.name.startswith("_")}
     assert paths == actual_paths, "Painted images and manifest disagree"
     print(f"[PASS] Manifest: {len(keys)} variants; {len(expected - keys)} combinations not exported")
 

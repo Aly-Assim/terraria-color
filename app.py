@@ -11,6 +11,7 @@ from PIL import Image
 
 from scripts.paths import PROJECT_ROOT, DB_PATH, IMAGES_ROOT, connect_readonly
 from scripts.paint.renderer import PAINTS, apply_paint
+from scripts.catalog import OBJECT_TYPES, normalize_object_type
 
 
 app = Flask(__name__)
@@ -383,6 +384,7 @@ def base_select_query(connection):
     return f"""
         SELECT
             o.local_id,
+            o.object_type,
             o.name,
             o.canonical_name,
             o.category_name,
@@ -466,6 +468,7 @@ def row_to_card(
 
     return {
         "local_id": row["local_id"],
+        "object_type": row_value(row, "object_type", "block"),
         "name": row["name"],
         "canonical_name": row["canonical_name"],
         "category_name": row["category_name"],
@@ -517,7 +520,8 @@ def row_to_card(
     }
 
 
-def search_catalog(query_text, limit=200):
+def search_catalog(query_text, limit=200, object_type="all"):
+    object_type = normalize_object_type(object_type)
     query_text = query_text.strip().lower()
 
     if not query_text:
@@ -533,10 +537,11 @@ def search_catalog(query_text, limit=200):
         cursor.execute(
             query
             + """
-            WHERE
+            WHERE (
                 LOWER(o.name) LIKE ?
                 OR LOWER(o.canonical_name) LIKE ?
                 OR LOWER(COALESCE(o.category_name, '')) LIKE ?
+            ) AND (? = 'all' OR o.object_type = ?)
             ORDER BY o.name
             LIMIT ?
             """,
@@ -544,6 +549,8 @@ def search_catalog(query_text, limit=200):
                 like_value,
                 like_value,
                 like_value,
+                object_type,
+                object_type,
                 limit,
             ),
         )
@@ -565,7 +572,9 @@ def search_by_color(
     color_mode,
     dispersion_weight,
     paint_filter,
+    object_type="all",
 ):
+    object_type = normalize_object_type(object_type)
     target_rgb = hex_to_rgb(hex_color)
 
     connection = connect_db()
@@ -596,6 +605,7 @@ def search_by_color(
         sql = f"""
             SELECT
                 o.local_id,
+                o.object_type,
                 o.name,
                 o.canonical_name,
                 o.category_name,
@@ -636,6 +646,9 @@ def search_by_color(
         """
 
         parameters = []
+        if object_type != "all":
+            sql += " AND o.object_type = ?"
+            parameters.append(object_type)
 
         if paint_filter != "all":
             sql += " AND opc.paint_id = ?"
@@ -725,6 +738,7 @@ def paint_options():
 
 @app.route("/")
 def index():
+    object_type = normalize_object_type(request.args.get("object_type", "all"))
     mode = request.args.get(
         "mode",
         "",
@@ -791,7 +805,7 @@ def index():
 
     if mode == "catalog":
         catalog_results = search_catalog(
-            catalog_query
+            catalog_query, object_type=object_type
         )
 
     if mode == "color":
@@ -811,6 +825,7 @@ def index():
                     color_mode,
                     dispersion_weight,
                     paint_filter,
+                    object_type=object_type,
                 )
             )
 
@@ -829,6 +844,8 @@ def index():
         "index.html",
 
         mode=mode,
+        object_type=object_type,
+        object_types=OBJECT_TYPES,
 
         catalog_query=catalog_query,
         catalog_results=catalog_results,

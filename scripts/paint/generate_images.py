@@ -12,6 +12,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts.paths import PAINTED_ROOT, connect_readonly
+from scripts.catalog import painted_folder, world_source_path
 from scripts.paint.renderer import PAINTS, generate_all_paints, build_contact_sheet
 
 
@@ -19,14 +20,14 @@ def write_manifest(output_root: Path = PAINTED_ROOT) -> Path:
     """Index existing variants only; never render or modify an image."""
     with connect_readonly() as connection:
         objects = connection.execute(
-            "SELECT local_id, name, world_image_path FROM objects ORDER BY local_id"
+            "SELECT local_id, name, object_type, world_image_path FROM objects ORDER BY local_id"
         ).fetchall()
     rows = []
     for obj in objects:
         source = obj["world_image_path"]
         if not source:
             continue
-        folder = Path(source.replace("\\", "/")).stem
+        folder = painted_folder(obj)
         for paint_id, (slug, name) in PAINTS.items():
             relative = Path(folder) / f"{paint_id:02d}_{slug}.png"
             if (output_root / relative).is_file():
@@ -147,8 +148,8 @@ def build_html_index(output_root: Path, block_names: list[str]) -> Path:
 </head>
 <body>
     <header>
-        <h1>Terraria Paint Shader — Tous les blocs</h1>
-        <p>{len(block_names)} blocs générés. Clique sur une image pour l’ouvrir en grand.</p>
+        <h1>Terraria Paint Shader — Blocs et murs</h1>
+        <p>{len(block_names)} objets générés. Clique sur une image pour l’ouvrir en grand.</p>
     </header>
 
     <main class="grid">
@@ -176,22 +177,20 @@ def main() -> int:
 
     with connect_readonly() as connection:
         objects = connection.execute(
-            "SELECT local_id, name, world_image_path FROM objects ORDER BY local_id"
+            "SELECT local_id, name, object_type, world_image_path FROM objects ORDER BY local_id"
         ).fetchall()
     PAINTED_ROOT.mkdir(parents=True, exist_ok=True)
     generated_blocks = []
     errors = 0
     for obj in objects:
         try:
-            if not obj["world_image_path"]:
-                raise ValueError("No world image path")
-            source = (PROJECT_ROOT / obj["world_image_path"].replace("\\", "/")).resolve()
-            source.relative_to(PROJECT_ROOT / "images" / "world")
-            output = PAINTED_ROOT / source.stem
+            source = world_source_path(obj)
+            folder = painted_folder(obj)
+            output = PAINTED_ROOT / folder
             # Pillow reads frame zero for GIFs, as in the Flask paint endpoint.
             paths = generate_all_paints(source, output)
             build_contact_sheet(paths, output / "_contact_sheet.png", columns=4)
-            generated_blocks.append(source.stem)
+            generated_blocks.append(folder.as_posix())
             print(f"[OK] {obj['local_id']}: {obj['name']}")
         except Exception as exc:
             errors += 1

@@ -1,153 +1,29 @@
-﻿<article class="card">
+<article class="card">
     <div class="image-zone">
-        {% if block.painted_image_url %}
-            <img
-                class="world-img"
-                src="{{ block.painted_image_url }}"
-                alt="{{ block.name }} · {{ block.paint_name }}"
-                loading="lazy"
-            >
-        {% elif block.world_image_url %}
-            <img
-                class="world-img"
-                src="{{ block.world_image_url }}"
-                alt="{{ block.name }}"
-                loading="lazy"
-            >
-        {% else %}
-            <div class="missing-image">
-                No world image
-            </div>
-        {% endif %}
-
-        {% if block.inventory_image_url %}
-            <img
-                class="inventory-img"
-                src="{{ block.inventory_image_url }}"
-                alt="{{ block.name }} inventory"
-                loading="lazy"
-            >
-        {% endif %}
-
-        {% if block.paint_name %}
-            <span class="paint-badge">
-                {{ block.paint_name }}
-            </span>
-        {% endif %}
+        <span class="object-badge">{{ 'Mur' if block.object_type == 'wall' else 'Bloc' }}</span>
+        {% if block.painted_image_url %}<img class="world-img" src="{{ block.painted_image_url }}" alt="{{ block.name }} · {{ block.paint_name }}" loading="lazy">
+        {% elif block.world_image_url %}<img class="world-img" src="{{ block.world_image_url }}" alt="{{ block.name }}" loading="lazy">
+        {% else %}<span class="missing-image">Aperçu indisponible</span>{% endif %}
+        {% if block.inventory_image_url %}<img class="inventory-img" src="{{ block.inventory_image_url }}" alt="{{ block.name }} — inventaire" loading="lazy">{% endif %}
     </div>
-
     <div class="card-body">
         <h3>{{ block.name }}</h3>
-
-        <p class="meta">
-            ID {{ block.local_id }}
-
-            {% if block.category_name %}
-                · {{ block.category_name }}
-            {% endif %}
-        </p>
-
-        {% if block.paint_name %}
-            <div class="paint-line">
-                <span>Paint {{ "%02d"|format(block.paint_id) }}</span>
-                <strong>{{ block.paint_name }}</strong>
-            </div>
-        {% endif %}
-
-        {% if block.avg_hex %}
-            <div
-                class="color-line {% if block.search_color_mode == 'average' %}matched-color{% endif %}"
-            >
-                <span
-                    class="mini-swatch"
-                    style="background: {{ block.avg_hex }};"
-                ></span>
-
-                <div>
-                    <small>Moyenne</small>
-                    <span>{{ block.avg_hex }}</span>
-                </div>
-            </div>
-        {% endif %}
-
-        {% if block.dominant_hex %}
-            <div
-                class="color-line {% if block.search_color_mode == 'dominant' %}matched-color{% endif %}"
-            >
-                <span
-                    class="mini-swatch"
-                    style="background: {{ block.dominant_hex }};"
-                ></span>
-
-                <div>
-                    <small>Dominante</small>
-                    <span>{{ block.dominant_hex }}</span>
-                </div>
-            </div>
-
-            {% if block.dominant_ratio is not none %}
-                <p class="stat-line">
-                    Part dominante :
-                    <strong>
-                        {{ "%.1f"|format(block.dominant_ratio * 100) }} %
-                    </strong>
-                </p>
-            {% endif %}
-        {% endif %}
-
-        {% if block.dispersion_norm is not none %}
-            <div class="dispersion-result">
-                <div class="dispersion-result-header">
-                    <span>Dispersion</span>
-
-                    <strong>
-                        {{ "%.1f"|format(block.dispersion_norm * 100) }} %
-                    </strong>
-                </div>
-
-                <div class="dispersion-meter">
-                    <span
-                        style="width: {{ [block.dispersion_norm * 100, 100]|min }}%;"
-                    ></span>
-                </div>
-            </div>
-        {% endif %}
-
-        {% if block.distance is not none %}
-            <p class="distance">
-                Distance OKLab :
-                {{ "%.4f"|format(block.distance) }}
-            </p>
-        {% endif %}
-
-        {% if block.score is not none
-              and block.search_color_mode == "average" %}
-            <p class="score">
-                Score avec dispersion :
-                {{ "%.4f"|format(block.score) }}
-            </p>
-        {% endif %}
-
-        {% if block.status != "ok"
-              and block.status != "manual_fixed" %}
-            <p class="warning">
-                {{ block.status }}
-                {% if block.problem %}
-                    · {{ block.problem }}
-                {% endif %}
-            </p>
-        {% endif %}
-
-        {% if block.page_url %}
-            <a
-                class="wiki-link"
-                href="{{ block.page_url }}"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Wiki
-            </a>
-        {% endif %}
+        <div class="paint-line">{% if block.paint_name %}<span class="paint-dot" aria-hidden="true"></span><strong>{{ block.paint_name }}</strong><span class="paint-id">Peinture {{ "%02d"|format(block.paint_id) }}</span>{% else %}<span>Texture d’origine</span>{% endif %}</div>
+        <div class="color-pair">
+            {% if block.avg_hex %}<div class="color-stat {% if block.search_color_mode != 'dominant' %}matched-color{% endif %}"><span class="mini-swatch" style="background: {{ block.avg_hex }}" aria-hidden="true"></span><div><small>Moyenne{% if block.search_color_mode == 'average' %} · match{% endif %}</small><strong>{{ block.avg_hex }}</strong></div></div>{% endif %}
+            {% if block.dominant_hex %}<div class="color-stat {% if block.search_color_mode == 'dominant' %}matched-color{% endif %}"><span class="mini-swatch" style="background: {{ block.dominant_hex }}" aria-hidden="true"></span><div><small>Dominante{% if block.search_color_mode == 'dominant' %} · match{% endif %}</small><strong>{{ block.dominant_hex }}</strong></div></div>{% endif %}
+        </div>
+        <details class="card-details"><summary>Détails & mesures <span aria-hidden="true">+</span></summary>
+            <dl>
+                <div><dt>ID local</dt><dd>{{ block.local_id }}</dd></div>
+                {% if block.category_name %}<div><dt>Catégorie</dt><dd>{{ block.category_name }}</dd></div>{% endif %}
+                {% if block.dominant_ratio is not none %}<div><dt>Part dominante</dt><dd>{{ "%.1f"|format(block.dominant_ratio * 100) }} %</dd></div>{% endif %}
+                {% if block.dispersion_norm is not none %}<div><dt>Dispersion</dt><dd>{{ "%.1f"|format(block.dispersion_norm * 100) }} %</dd></div>{% endif %}
+                {% if block.distance is not none %}<div><dt>Distance OKLab</dt><dd>{{ "%.4f"|format(block.distance) }}</dd></div>{% endif %}
+                {% if block.score is not none and block.search_color_mode == 'average' %}<div><dt>Score avec dispersion</dt><dd>{{ "%.4f"|format(block.score) }}</dd></div>{% endif %}
+            </dl>
+        </details>
+        {% if block.status not in ['ok', 'manual_fixed'] %}<p class="warning">{{ block.status }}{% if block.problem %} · {{ block.problem }}{% endif %}</p>{% endif %}
+        {% if block.page_url %}<a class="wiki-link" href="{{ block.page_url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ block.name }} sur le Wiki (nouvel onglet)">Voir sur le Wiki <span aria-hidden="true">↗</span></a>{% endif %}
     </div>
 </article>
-

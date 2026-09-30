@@ -1,401 +1,100 @@
-﻿<!DOCTYPE html>
-<html lang="fr">
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terraria Color Catalog</title>
+    <meta name="color-scheme" content="dark light">
+    <title>Terraria Color</title>
+    <script>
+        // Apply a saved choice before CSS paints the page. Dark is the first-visit default.
+        try {
+            const theme = localStorage.getItem('terraria-color-theme');
+            if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
+        } catch (_) { /* Storage may be unavailable in private browsing. */ }
+    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='ui.js') }}" defer></script>
 </head>
-
 <body>
-    <header class="hero">
-        <div>
-            <p class="eyebrow">Terraria Color</p>
-            <h1>Catalogue & recherche par couleur</h1>
-            <p class="subtitle">
-                Cherche un bloc par nom, ou trouve les combinaisons bloc + peinture
-                Terraria les plus proches d'une couleur.
-            </p>
-        </div>
+    <a class="skip-link" href="#workspace">Aller aux recherches</a>
+    <header class="site-header shell">
+        <h1 class="site-title"><a href="{{ url_for('index') }}">Terraria Color</a></h1>
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Activer le thème clair" aria-pressed="false" hidden>
+            <span class="theme-icon" aria-hidden="true">◐</span><span id="themeLabel">Thème clair</span>
+        </button>
     </header>
-
-    <main class="layout">
-        <section class="panel">
-            <h2>Catalogue</h2>
-
-            <p class="panel-text">
-                Tape un mot comme <strong>bamboo</strong>,
-                <strong>stone</strong>, <strong>brick</strong>,
-                <strong>moss</strong>...
-            </p>
-
-            <form method="get" class="form-block">
-                <input type="hidden" name="mode" value="catalog">
-
-                <label for="q">Nom du bloc</label>
-
-                <div class="row">
-                    <input
-                        id="q"
-                        name="q"
-                        type="text"
-                        value="{{ catalog_query }}"
-                        placeholder="Ex: bamboo, stone, moss..."
-                    >
-
-                    <button type="submit">
-                        Chercher
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <section class="panel">
-            <h2>Recherche couleur</h2>
-
-            <p class="panel-text">
-                Compare la couleur cible à la moyenne ou à la couleur dominante
-                de chaque combinaison bloc + peinture.
-            </p>
-
-            <form method="get" class="form-block">
-                <input
-                    type="hidden"
-                    name="mode"
-                    value="color"
-                >
-
-                <div class="color-grid">
-                    <div>
-                        <label for="colorPicker">
-                            Color picker
-                        </label>
-
-                        <input
-                            id="colorPicker"
-                            class="color-picker"
-                            type="color"
-                            value="{{ color_value }}"
-                        >
+    <main id="workspace" class="shell">
+        <div class="controls">
+            <section class="panel catalog-panel" aria-labelledby="catalogTitle">
+                <div class="panel-heading"><h2 id="catalogTitle">Catalogue</h2></div>
+                <form method="get" class="form-block catalog-form">
+                    <input type="hidden" name="mode" value="catalog">
+                    {% include "partials_object_filter.html" %}
+                    <div class="field"><label for="q">Nom ou catégorie</label>
+                        <input id="q" name="q" type="search" value="{{ catalog_query }}" placeholder="Stone, bamboo, moss…">
                     </div>
-
-                    <div>
-                        <label for="colorInput">
-                            HEX
-                        </label>
-
-                        <input
-                            id="colorInput"
-                            name="color"
-                            type="text"
-                            value="{{ color_value }}"
-                            placeholder="#8a6a4b"
-                        >
-                    </div>
-
-                    <div>
-                        <label for="k">
-                            Nombre de résultats
-                        </label>
-
-                        <input
-                            id="k"
-                            name="k"
-                            type="number"
-                            min="1"
-                            max="200"
-                            value="{{ k }}"
-                        >
-                    </div>
-
-                    <div>
-                        <label>
-                            Preview
-                        </label>
-
-                        <div
-                            id="colorPreview"
-                            class="color-preview"
-                            style="background: {{ color_value }};"
-                        ></div>
-                    </div>
-                </div>
-
-                <div class="search-options">
-                    <div class="option-block">
-                        <label>
-                            Méthode de couleur
-                        </label>
-
-                        <div class="segmented">
-                            <label
-                                class="segment {% if color_mode == 'average' %}active{% endif %}"
-                            >
-                                <input
-                                    type="radio"
-                                    name="color_mode"
-                                    value="average"
-                                    {% if color_mode == "average" %}checked{% endif %}
-                                >
-                                Moyenne
-                            </label>
-
-                            <label
-                                class="segment {% if color_mode == 'dominant' %}active{% endif %}"
-                            >
-                                <input
-                                    type="radio"
-                                    name="color_mode"
-                                    value="dominant"
-                                    {% if color_mode == "dominant" %}checked{% endif %}
-                                >
-                                Dominante
-                            </label>
+                    <button type="submit" class="secondary-button">Rechercher</button>
+                </form>
+                <p class="catalog-note">Les noms du catalogue sont en anglais.</p>
+            </section>
+            <section class="panel color-panel" aria-labelledby="colorTitle">
+                <div class="panel-heading"><h2 id="colorTitle">Recherche par couleur</h2></div>
+                <form method="get" class="form-block color-form">
+                    <input type="hidden" name="mode" value="color">
+                    <div class="color-controls">
+                        <div class="field color-field"><label for="colorInput">Couleur cible · HEX</label>
+                            <div class="color-entry">
+                                <input id="colorPicker" type="color" value="{{ color_value if target_rgb or mode != 'color' else '#8a6a4b' }}" aria-label="Choisir la couleur cible">
+                                <input id="colorInput" name="color" type="text" value="{{ color_value }}" placeholder="#8a6a4b" spellcheck="false" autocapitalize="off" aria-describedby="hexHint">
+                            </div>
+                            <span id="hexHint" class="sr-only">Couleur hexadécimale à trois ou six chiffres, avec ou sans dièse.</span>
                         </div>
+                        {% include "partials_object_filter.html" %}
+                        <div class="field"><label for="paint">Peinture</label><select id="paint" name="paint">
+                            <option value="all" {% if paint_filter == 'all' %}selected{% endif %}>Toutes les peintures</option>
+                            {% for paint in paint_options %}<option value="{{ paint.id }}" {% if paint_filter == paint.id|string %}selected{% endif %}>{{ "%02d"|format(paint.id) }} · {{ paint.name }}</option>{% endfor %}
+                        </select></div>
+                        <div class="field"><label for="k">Résultats</label><input id="k" name="k" type="number" min="1" max="200" value="{{ k }}"></div>
                     </div>
+                    <div class="analysis-controls">
+                        <fieldset class="method-field"><legend>Comparer la couleur</legend>
+                            <div class="segmented">
+                                <label class="segment"><input type="radio" name="color_mode" value="average" {% if color_mode == 'average' %}checked{% endif %}><span>Moyenne</span></label>
+                                <label class="segment"><input type="radio" name="color_mode" value="dominant" {% if color_mode == 'dominant' %}checked{% endif %}><span>Dominante</span></label>
+                            </div>
+                        </fieldset>
+                        <div id="dispersionBlock" class="dispersion-block {% if color_mode == 'dominant' %}inactive{% endif %}">
+                            <div class="slider-title"><label for="dispersion">Dispersion</label><output id="dispersionValue" for="dispersion">{{ dispersion_weight }} %</output></div>
+                            <input id="dispersion" name="dispersion" type="range" min="0" max="100" step="1" value="{{ dispersion_weight }}" aria-describedby="dispersionHelp">
+                            <p id="dispersionHelp" class="help-text">En Moyenne, une valeur élevée favorise les textures aux couleurs uniformes. Sans effet en Dominante.</p>
+                        </div>
+                        <button type="submit" class="search-button">Rechercher</button>
+                    </div>
+                </form>
+            </section>
+        </div>
 
-                    <div class="option-block">
-                        <label for="paint">
-                            Peinture
-                        </label>
-
-                        <select
-                            id="paint"
-                            name="paint"
-                        >
-                            <option
-                                value="all"
-                                {% if paint_filter == "all" %}selected{% endif %}
-                            >
-                                Toutes les peintures
-                            </option>
-
-                            {% for paint in paint_options %}
-                                <option
-                                    value="{{ paint.id }}"
-                                    {% if paint_filter == paint.id|string %}selected{% endif %}
-                                >
-                                    {{ "%02d"|format(paint.id) }} · {{ paint.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
+        {% if error %}<div class="message error" role="alert">{{ error }}</div>{% endif %}
+        {% if mode in ['catalog', 'color'] %}
+            {% set results = catalog_results if mode == 'catalog' else color_results %}
+            <section class="results" aria-labelledby="resultsTitle">
+                <div class="results-header">
+                    <div class="results-title"><h2 id="resultsTitle">Résultats</h2><span class="result-count">{{ results|length }} résultat(s)</span></div>
+                    <div class="search-summary">
+                        {% if mode == 'catalog' %}<span>« {{ catalog_query }} »</span>
+                        {% else %}
+                            {% if target_rgb %}<span class="target-color"><span class="mini-swatch" style="background: {{ color_value }}" aria-hidden="true"></span><strong>{{ color_value }}</strong><span class="target-rgb">RGB({{ target_rgb|join(', ') }})</span></span>{% endif %}
+                            <span>{{ 'Moyenne' if color_mode == 'average' else 'Dominante' }}</span><span>{{ selected_paint_name }}</span>
+                            {% if color_mode == 'average' %}<span>Dispersion {{ dispersion_weight }} %</span>{% endif %}
+                        {% endif %}
+                        <span>{{ object_types[object_type] }}</span>
                     </div>
                 </div>
-
-                <div
-                    id="dispersionBlock"
-                    class="dispersion-block {% if color_mode == 'dominant' %}disabled{% endif %}"
-                >
-                    <div class="slider-title">
-                        <label for="dispersion">
-                            Importance de la dispersion
-                        </label>
-
-                        <strong>
-                            <span id="dispersionValue">
-                                {{ dispersion_weight }}
-                            </span> %
-                        </strong>
-                    </div>
-
-                    <input
-                        id="dispersion"
-                        name="dispersion"
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="1"
-                        value="{{ dispersion_weight }}"
-                    >
-
-                    <div class="slider-labels">
-                        <span>Ignorer</span>
-                        <span>Pénaliser fortement les textures dispersées</span>
-                    </div>
-
-                    <p class="help-text">
-                        Utilisé uniquement en mode Moyenne. Une texture rouge + bleue
-                        qui donne une moyenne mauve sera pénalisée si ses couleurs sont
-                        très dispersées.
-                    </p>
-                </div>
-
-                <button
-                    type="submit"
-                    class="wide-button"
-                >
-                    Trouver les plus proches
-                </button>
-            </form>
-        </section>
-    </main>
-
-    {% if error %}
-        <section class="message error">
-            {{ error }}
-        </section>
-    {% endif %}
-
-    {% if mode == "catalog" %}
-        <section class="results-header">
-            <h2>Résultats catalogue</h2>
-
-            <p>
-                Recherche :
-                <strong>{{ catalog_query }}</strong>
-                · {{ catalog_results|length }} résultat(s)
-            </p>
-        </section>
-
-        <section class="cards">
-            {% for block in catalog_results %}
-                {% include "partials_card.html" %}
-            {% endfor %}
-        </section>
-
-        {% if catalog_query and catalog_results|length == 0 %}
-            <section class="message">
-                Aucun bloc trouvé pour cette recherche.
+                {% if results %}<div class="cards">{% for block in results %}{% include "partials_card.html" %}{% endfor %}</div>
+                {% elif not error %}<div class="empty-state"><span class="empty-symbol" aria-hidden="true">⌕</span><h3>Aucun résultat pour cette recherche</h3><p>Essayez un autre nom, une autre peinture ou le filtre « Tous ».</p></div>{% endif %}
             </section>
         {% endif %}
-    {% endif %}
-
-    {% if mode == "color" %}
-        <section class="results-header">
-            <h2>Combinaisons les plus proches</h2>
-
-            <div class="target-line">
-                <span>Couleur cible :</span>
-
-                <span
-                    class="mini-swatch"
-                    style="background: {{ color_value }};"
-                ></span>
-
-                <strong>{{ color_value }}</strong>
-
-                {% if target_rgb %}
-                    <span>
-                        RGB({{ target_rgb[0] }},
-                        {{ target_rgb[1] }},
-                        {{ target_rgb[2] }})
-                    </span>
-                {% endif %}
-            </div>
-
-            <div class="search-summary">
-                <span class="summary-pill">
-                    {% if color_mode == "average" %}
-                        Moyenne
-                    {% else %}
-                        Dominante
-                    {% endif %}
-                </span>
-
-                <span class="summary-pill">
-                    {{ selected_paint_name }}
-                </span>
-
-                {% if color_mode == "average" %}
-                    <span class="summary-pill">
-                        Dispersion {{ dispersion_weight }} %
-                    </span>
-                {% endif %}
-            </div>
-
-            <p>
-                Top {{ color_results|length }} combinaison(s)
-                bloc + peinture.
-            </p>
-        </section>
-
-        <section class="cards">
-            {% for block in color_results %}
-                {% include "partials_card.html" %}
-            {% endfor %}
-        </section>
-    {% endif %}
-
-    <script>
-        const colorPicker = document.getElementById("colorPicker");
-        const colorInput = document.getElementById("colorInput");
-        const colorPreview = document.getElementById("colorPreview");
-
-        const dispersion = document.getElementById("dispersion");
-        const dispersionValue = document.getElementById("dispersionValue");
-        const dispersionBlock = document.getElementById("dispersionBlock");
-
-        const colorModeRadios = document.querySelectorAll(
-            'input[name="color_mode"]'
-        );
-
-        function normalizeHex(value) {
-            value = value.trim();
-
-            if (!value.startsWith("#")) {
-                value = "#" + value;
-            }
-
-            return value;
-        }
-
-        function updateColorModeUI() {
-            let selectedMode = "average";
-
-            colorModeRadios.forEach((radio) => {
-                const label = radio.closest(".segment");
-
-                if (label) {
-                    label.classList.toggle(
-                        "active",
-                        radio.checked
-                    );
-                }
-
-                if (radio.checked) {
-                    selectedMode = radio.value;
-                }
-            });
-
-            if (dispersionBlock) {
-                dispersionBlock.classList.toggle(
-                    "disabled",
-                    selectedMode === "dominant"
-                );
-            }
-        }
-
-        if (colorPicker && colorInput && colorPreview) {
-            colorPicker.addEventListener("input", () => {
-                colorInput.value = colorPicker.value;
-                colorPreview.style.background = colorPicker.value;
-            });
-
-            colorInput.addEventListener("input", () => {
-                const value = normalizeHex(colorInput.value);
-
-                if (/^#[0-9a-fA-F]{6}$/.test(value)) {
-                    colorPicker.value = value;
-                    colorPreview.style.background = value;
-                }
-            });
-        }
-
-        if (dispersion && dispersionValue) {
-            dispersion.addEventListener("input", () => {
-                dispersionValue.textContent = dispersion.value;
-            });
-        }
-
-        colorModeRadios.forEach((radio) => {
-            radio.addEventListener(
-                "change",
-                updateColorModeUI
-            );
-        });
-
-        updateColorModeUI();
-    </script>
+        <footer class="site-footer"><span>Projet communautaire · Assets Terraria / Re-Logic</span></footer>
+    </main>
 </body>
 </html>
-

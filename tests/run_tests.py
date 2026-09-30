@@ -3,11 +3,12 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from tests import test_dataset, test_renderer, test_site
+from tests import test_dataset, test_renderer, test_site, test_walls
 
 
 if __name__ == "__main__":
     if test_renderer.main():
         raise SystemExit(1)
     test_site.main()
+    test_walls.main()
     test_dataset.main()

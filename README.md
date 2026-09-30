@@ -259,6 +259,11 @@ cannot be launched against the curated release through their normal entry points
 
 ## Contributing and attribution
 
+Wall support is prepared without importing any wall data yet. Both search forms
+offer Tous / Blocs / Murs, and future wall assets have separate directories.
+See [adding walls](docs/adding-walls.md) for stable IDs, image paths, the shared
+paint renderer, and the next import stage. The existing block dataset is unchanged.
+
 Keep the project small, preserve existing color algorithms, and run the safe
 tests before submitting changes. Do not include local caches, private reports,
 backups, or secrets. Painted exports are intentionally versioned. Check
