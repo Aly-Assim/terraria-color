@@ -16,6 +16,12 @@ from scripts.catalog import OBJECT_TYPES, normalize_object_type
 
 app = Flask(__name__)
 
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 # Maximum additive penalty, expressed in OKLab-distance units.
 # At 100% slider + dispersion_norm=1, a candidate receives +0.15.
 MAX_DISPERSION_PENALTY = 0.15

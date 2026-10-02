@@ -46,7 +46,6 @@ cd terraria-color
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-python app.py
 ```
 
 ### Linux
@@ -56,8 +55,21 @@ git clone https://github.com/Aly-Assim/terraria-color.git
 cd terraria-color
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
+```
+
+### Run locally
+
+The simplest way to run Terraria Color locally is:
+
+```text
 python app.py
+```
+
+On Linux or in a production environment, use Gunicorn:
+
+```bash
+gunicorn app:app
 ```
 
 Then open:
