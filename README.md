@@ -6,6 +6,7 @@ The project combines a curated SQLite catalog, perceptual color analysis, and an
 
 ## Features
 
+- Use the interface in French or English with the FR / EN switch; your language preference is remembered.
 - Browse blocks and background walls by name or category.
 - Search by target color using Average or Dominant matching.
 - Rank results with perceptual OKLab distance.

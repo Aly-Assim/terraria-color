@@ -1,7 +1,7 @@
-<label class="field object-filter"><span>Type d’objet</span>
+<label class="field object-filter"><span data-i18n>Type d’objet</span>
     <select name="object_type">
         {% for value, label in object_types.items() %}
-        <option value="{{ value }}" {% if object_type == value %}selected{% endif %}>{{ label }}</option>
+        <option data-i18n value="{{ value }}" {% if object_type == value %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
     </select>
 </label>

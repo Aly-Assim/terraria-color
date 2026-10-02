@@ -394,6 +394,9 @@ def base_select_query(connection):
             o.inventory_image_path,
             o.world_image_path,
             o.color_image_path,
+            o.internal_item_id,
+            o.internal_tile_id,
+            o.internal_wall_id,
             {color_select}
         FROM objects o
         {color_join}
@@ -468,6 +471,9 @@ def row_to_card(
 
     return {
         "local_id": row["local_id"],
+        "internal_item_id": row_value(row, "internal_item_id"),
+        "internal_tile_id": row_value(row, "internal_tile_id"),
+        "internal_wall_id": row_value(row, "internal_wall_id"),
         "object_type": row_value(row, "object_type", "block"),
         "name": row["name"],
         "canonical_name": row["canonical_name"],
@@ -615,6 +621,9 @@ def search_by_color(
                 o.inventory_image_path,
                 o.world_image_path,
                 o.color_image_path,
+                o.internal_item_id,
+                o.internal_tile_id,
+                o.internal_wall_id,
 
                 opc.paint_id,
                 opc.paint_name,

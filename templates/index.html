@@ -2,99 +2,79 @@
 <html lang="fr" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
-    <title>Terraria Color</title>
+    <title>Terraria Color · Matériaux</title>
     <script>
-        // Apply a saved choice before CSS paints the page. Dark is the first-visit default.
+        document.documentElement.classList.add('js');
         try {
-            const theme = localStorage.getItem('terraria-color-theme');
-            if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
-        } catch (_) { /* Storage may be unavailable in private browsing. */ }
+            const saved = localStorage.getItem('terraria-color-theme');
+            document.documentElement.dataset.theme = saved === 'light' || saved === 'dark' ? saved : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        } catch (_) { /* Neutral dark fallback when storage is unavailable. */ }
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='translations.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='localization.js') }}" defer></script>
     <script src="{{ url_for('static', filename='ui.js') }}" defer></script>
 </head>
-<body>
-    <a class="skip-link" href="#workspace">Aller aux recherches</a>
-    <header class="site-header shell">
-        <h1 class="site-title"><a href="{{ url_for('index') }}">Terraria Color</a></h1>
-        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Activer le thème clair" aria-pressed="false" hidden>
-            <span class="theme-icon" aria-hidden="true">◐</span><span id="themeLabel">Thème clair</span>
-        </button>
-    </header>
-    <main id="workspace" class="shell">
-        <div class="controls">
-            <section class="panel catalog-panel" aria-labelledby="catalogTitle">
-                <div class="panel-heading"><h2 id="catalogTitle">Catalogue</h2></div>
-                <form method="get" class="form-block catalog-form">
-                    <input type="hidden" name="mode" value="catalog">
-                    {% include "partials_object_filter.html" %}
-                    <div class="field"><label for="q">Nom ou catégorie</label>
-                        <input id="q" name="q" type="search" value="{{ catalog_query }}" placeholder="Stone, bamboo, moss…">
-                    </div>
-                    <button type="submit" class="secondary-button">Rechercher</button>
-                </form>
-                <p class="catalog-note">Les noms du catalogue sont en anglais.</p>
-            </section>
-            <section class="panel color-panel" aria-labelledby="colorTitle">
-                <div class="panel-heading"><h2 id="colorTitle">Recherche par couleur</h2></div>
-                <form method="get" class="form-block color-form">
-                    <input type="hidden" name="mode" value="color">
-                    <div class="color-controls">
-                        <div class="field color-field"><label for="colorInput">Couleur cible · HEX</label>
-                            <div class="color-entry">
-                                <input id="colorPicker" type="color" value="{{ color_value if target_rgb or mode != 'color' else '#8a6a4b' }}" aria-label="Choisir la couleur cible">
-                                <input id="colorInput" name="color" type="text" value="{{ color_value }}" placeholder="#8a6a4b" spellcheck="false" autocapitalize="off" aria-describedby="hexHint">
-                            </div>
-                            <span id="hexHint" class="sr-only">Couleur hexadécimale à trois ou six chiffres, avec ou sans dièse.</span>
-                        </div>
-                        {% include "partials_object_filter.html" %}
-                        <div class="field"><label for="paint">Peinture</label><select id="paint" name="paint">
-                            <option value="all" {% if paint_filter == 'all' %}selected{% endif %}>Toutes les peintures</option>
-                            {% for paint in paint_options %}<option value="{{ paint.id }}" {% if paint_filter == paint.id|string %}selected{% endif %}>{{ "%02d"|format(paint.id) }} · {{ paint.name }}</option>{% endfor %}
-                        </select></div>
-                        <div class="field"><label for="k">Résultats</label><input id="k" name="k" type="number" min="1" max="200" value="{{ k }}"></div>
-                    </div>
-                    <div class="analysis-controls">
-                        <fieldset class="method-field"><legend>Comparer la couleur</legend>
-                            <div class="segmented">
-                                <label class="segment"><input type="radio" name="color_mode" value="average" {% if color_mode == 'average' %}checked{% endif %}><span>Moyenne</span></label>
-                                <label class="segment"><input type="radio" name="color_mode" value="dominant" {% if color_mode == 'dominant' %}checked{% endif %}><span>Dominante</span></label>
-                            </div>
-                        </fieldset>
-                        <div id="dispersionBlock" class="dispersion-block {% if color_mode == 'dominant' %}inactive{% endif %}">
-                            <div class="slider-title"><label for="dispersion">Dispersion</label><output id="dispersionValue" for="dispersion">{{ dispersion_weight }} %</output></div>
-                            <input id="dispersion" name="dispersion" type="range" min="0" max="100" step="1" value="{{ dispersion_weight }}" aria-describedby="dispersionHelp">
-                            <p id="dispersionHelp" class="help-text">En Moyenne, une valeur élevée favorise les textures aux couleurs uniformes. Sans effet en Dominante.</p>
-                        </div>
-                        <button type="submit" class="search-button">Rechercher</button>
-                    </div>
-                </form>
-            </section>
+<body data-mode="{{ mode }}">
+    <a class="skip-link" href="#results"><span data-i18n>Aller aux résultats</span></a>
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('index') }}">Terraria Color<span class="brand-divider" aria-hidden="true">/</span><span class="brand-context"><span data-i18n>Matériaux</span></span></a>
+        <div class="top-actions">
+            <div class="language-switch" role="group" aria-label="Langue" data-i18n-aria-label="Langue" hidden><button type="button" data-language="fr" aria-label="Français" lang="fr">FR</button><button type="button" data-language="en" aria-label="English" lang="en">EN</button></div>
+            <button id="filterToggle" class="quiet-button mobile-only" type="button" aria-expanded="false" aria-controls="filters" hidden><span data-i18n>Filtres</span> <span aria-hidden="true">≡</span></button>
+            <button id="themeToggle" class="quiet-button" type="button" aria-label="Changer de thème" data-i18n-aria-label="Changer de thème" hidden><span aria-hidden="true">◐</span> <span id="themeLabel">Thème clair</span></button>
         </div>
-
-        {% if error %}<div class="message error" role="alert">{{ error }}</div>{% endif %}
-        {% if mode in ['catalog', 'color'] %}
-            {% set results = catalog_results if mode == 'catalog' else color_results %}
-            <section class="results" aria-labelledby="resultsTitle">
-                <div class="results-header">
-                    <div class="results-title"><h2 id="resultsTitle">Résultats</h2><span class="result-count">{{ results|length }} résultat(s)</span></div>
-                    <div class="search-summary">
-                        {% if mode == 'catalog' %}<span>« {{ catalog_query }} »</span>
-                        {% else %}
-                            {% if target_rgb %}<span class="target-color"><span class="mini-swatch" style="background: {{ color_value }}" aria-hidden="true"></span><strong>{{ color_value }}</strong><span class="target-rgb">RGB({{ target_rgb|join(', ') }})</span></span>{% endif %}
-                            <span>{{ 'Moyenne' if color_mode == 'average' else 'Dominante' }}</span><span>{{ selected_paint_name }}</span>
-                            {% if color_mode == 'average' %}<span>Dispersion {{ dispersion_weight }} %</span>{% endif %}
-                        {% endif %}
-                        <span>{{ object_types[object_type] }}</span>
-                    </div>
-                </div>
-                {% if results %}<div class="cards">{% for block in results %}{% include "partials_card.html" %}{% endfor %}</div>
-                {% elif not error %}<div class="empty-state"><span class="empty-symbol" aria-hidden="true">⌕</span><h3>Aucun résultat pour cette recherche</h3><p>Essayez un autre nom, une autre peinture ou le filtre « Tous ».</p></div>{% endif %}
+    </header>
+    <main id="workspace" class="workspace">
+        <aside id="filters" class="filters" aria-label="Recherche et filtres" data-i18n-aria-label="Recherche et filtres">
+            <div class="filter-heading"><span class="eyebrow"><span data-i18n>Paramètres de recherche</span></span><button id="filterClose" class="quiet-button mobile-only" type="button" hidden><span data-i18n>Fermer ×</span></button></div>
+            <section class="filter-section" aria-labelledby="catalogTitle">
+                <h2 id="catalogTitle"><span data-i18n>Catalogue</span> <span class="section-index">01</span></h2>
+                <form id="catalogForm" method="get">
+                    <input type="hidden" name="mode" value="catalog">
+                    <label for="q"><span data-i18n>Nom ou catégorie</span></label>
+                    <div class="search-entry"><input id="q" name="q" type="search" value="{{ catalog_query }}" placeholder="Stone, wood, Soil Walls…" data-i18n-placeholder="Stone, wood, Soil Walls…"><button class="input-submit" type="submit" aria-label="Rechercher dans le catalogue" data-i18n-aria-label="Rechercher dans le catalogue">↗</button></div>
+                    {% include 'partials_object_filter.html' %}
+                    <p class="hint"><span data-i18n>Noms et catégories en anglais.</span></p>
+                </form>
             </section>
-        {% endif %}
-        <footer class="site-footer"><span>Projet communautaire · Assets Terraria / Re-Logic</span></footer>
+            <section class="filter-section" aria-labelledby="colorTitle">
+                <h2 id="colorTitle"><span data-i18n>Couleur</span> <span class="section-index">02</span></h2>
+                <form id="colorForm" method="get">
+                    <input type="hidden" name="mode" value="color">
+                    <label for="colorInput"><span data-i18n>Couleur cible</span></label>
+                    <div class="color-entry"><input id="colorPicker" type="color" value="#8a6a4b" aria-label="Choisir la couleur cible" data-i18n-aria-label="Choisir la couleur cible"><input id="colorInput" name="color" type="text" value="{{ color_value }}" placeholder="#8a6a4b" spellcheck="false" autocapitalize="off" aria-describedby="hexHint"><span class="input-unit" aria-hidden="true">HEX</span></div>
+                    <span id="hexHint" class="sr-only"><span data-i18n>Trois ou six chiffres hexadécimaux, avec ou sans dièse.</span></span>
+                    {% include 'partials_object_filter.html' %}
+                    <fieldset class="method-field"><legend><span data-i18n>Correspondance</span></legend><div class="segmented">
+                        <label><input type="radio" name="color_mode" value="average" {% if color_mode == 'average' %}checked{% endif %}><span data-i18n>Moyenne</span></label>
+                        <label><input type="radio" name="color_mode" value="dominant" {% if color_mode == 'dominant' %}checked{% endif %}><span data-i18n>Dominante</span></label>
+                    </div></fieldset>
+                    <div class="field-row"><div class="grow"><label for="paint"><span data-i18n>Peinture</span></label><select id="paint" name="paint"><option value="all" {% if paint_filter == 'all' %}selected{% endif %} data-i18n>Toutes</option>{% for paint in paint_options %}<option data-i18n value="{{ paint.id }}" {% if paint_filter == paint.id|string %}selected{% endif %}>{{ '%02d'|format(paint.id) }} · {{ paint.name }}</option>{% endfor %}</select></div><div class="count-field"><label for="k"><span data-i18n>Résultats</span></label><input id="k" name="k" type="number" min="1" max="200" value="{{ k }}"></div></div>
+                    <div id="dispersionBlock" class="dispersion-block {% if color_mode == 'dominant' %}inactive{% endif %}"><div class="slider-title"><label for="dispersion"><span data-i18n>Uniformité des textures</span></label><output id="dispersionValue" for="dispersion">{{ dispersion_weight }} %</output></div><input id="dispersion" name="dispersion" type="range" min="0" max="100" value="{{ dispersion_weight }}" aria-describedby="dispersionHelp"><p id="dispersionHelp" class="hint"><span data-i18n>Pénalité de dispersion : une valeur élevée favorise les textures uniformes. Sans effet en Dominante.</span></p></div>
+                    <button class="search-button" type="submit"><span data-i18n>Comparer les couleurs</span> <span aria-hidden="true">↗</span></button>
+                    <p id="draftNotice" class="hint draft-notice" hidden><span data-i18n>Paramètres modifiés · appliquer pour actualiser.</span></p>
+                </form>
+            </section>
+            <details class="method-help"><summary><span data-i18n>Lire les mesures</span></summary><p><span data-i18n>La moyenne est calculée en lumière linéaire. La dominante représente le groupe de couleurs principal.</span></p><p><span data-i18n>La distance OKLab mesure l'écart perceptuel : plus elle est petite, plus les couleurs sont proches. En Moyenne, le score ajoute la pénalité de dispersion.</span></p></details>
+        </aside>
+        <div class="content">
+            {% set results = catalog_results if mode == 'catalog' else color_results %}
+            <section id="results" class="results" aria-labelledby="resultsTitle" tabindex="-1">
+                <div class="results-toolbar"><div><div class="results-title"><h1 id="resultsTitle"><span data-i18n>{{ 'Résultats' if mode in ['catalog', 'color'] else 'Explorer les matériaux' }}</span></h1>{% if mode in ['catalog', 'color'] %}<span class="result-count" data-i18n>{{ results|length }} résultat(s)</span>{% endif %}</div></div><span class="toolbar-note"><span data-i18n>{{ 'Classés par score' if mode == 'color' and color_mode == 'average' else 'Classés par distance' if mode == 'color' else 'Blocs / Murs' }}</span></span></div>
+                {% if mode in ['catalog', 'color'] %}<div class="search-summary">
+                    {% if mode == 'catalog' %}<span><span data-i18n>Recherche</span> <strong>« {{ catalog_query }} »</strong></span>{% else %}{% if target_rgb %}<span class="target-color"><i class="swatch" style="--swatch: {{ color_value }}" aria-hidden="true"></i><strong class="mono">{{ color_value }}</strong></span>{% endif %}<span data-i18n>{{ 'Moyenne' if color_mode == 'average' else 'Dominante' }}</span><span data-i18n>{{ selected_paint_name }}</span>{% if color_mode == 'average' %}<span data-i18n>Dispersion {{ dispersion_weight }} %</span>{% endif %}{% endif %}<span data-i18n>{{ object_types[object_type] }}</span>
+                </div>{% endif %}
+                {% if error %}<div class="message error" role="alert" data-i18n>{{ error }}</div>{% endif %}
+                {% if results %}<div class="cards">{% for block in results %}{% set result_index = loop.index %}{% include 'partials_card.html' %}{% endfor %}</div>
+                {% elif mode in ['catalog', 'color'] and not error %}<div class="empty-state"><span class="empty-index" aria-hidden="true">Ø</span><h2><span data-i18n>Aucun matériau trouvé</span></h2><p><span data-i18n>Modifiez le nom, la catégorie ou le type d’objet, puis relancez la recherche.</span></p></div>
+                {% elif not error %}<div class="start-state"><div class="start-heading"><span class="empty-index" aria-hidden="true">01—02</span><h2><span data-i18n>Rechercher un matériau ou comparer une couleur.</span></h2><p><span data-i18n>Utilisez les filtres pour parcourir les blocs et les murs, puis ouvrez une fiche pour examiner ses textures et ses mesures.</span></p></div><div class="quick-searches">{% for query, label, code in [('stone', 'Pierre', '01'), ('wood', 'Bois', '02'), ('brick', 'Briques', '03'), ('Soil Walls', 'Murs de terre', '04')] %}<a href="{{ url_for('index', mode='catalog', q=query, object_type='all') }}"><span class="mono">{{ code }}</span><strong><span data-i18n>{{ label }}</span></strong><span aria-hidden="true">↗</span></a>{% endfor %}</div></div>{% endif %}
+            </section>
+            <footer>Terraria / Re-Logic <span aria-hidden="true">·</span> <span data-i18n>Catalogue communautaire</span></footer>
+        </div>
     </main>
+    <dialog id="inspector" class="inspector" aria-labelledby="inspectorTitle"><div class="inspector-heading"><span class="eyebrow"><span data-i18n>Fiche matériau</span></span><button id="inspectorClose" class="quiet-button" type="button" aria-label="Fermer la fiche" data-i18n-aria-label="Fermer la fiche"><span data-i18n>Fermer ×</span></button></div><div id="inspectorContent"></div></dialog>
 </body>
 </html>
