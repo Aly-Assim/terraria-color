@@ -9,7 +9,7 @@
     const hex = document.getElementById('colorInput');
     const colorForm = document.getElementById('colorForm');
     const draft = document.getElementById('draftNotice');
-    const initialParams = new URLSearchParams(new FormData(colorForm)).toString();
+    const initialParams = colorForm ? new URLSearchParams(new FormData(colorForm)).toString() : "";
 
     function normalizedHex(value) {
         value = value.trim().replace(/^#/, '');
@@ -22,6 +22,7 @@
         return linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
     }
     function accent() {
+        if (!hex) return;
         const target = normalizedHex(hex.value);
         if (!target) return;
         const surface = rgb(getComputedStyle(root).getPropertyValue('--surface').trim());
@@ -62,10 +63,10 @@
         root.dataset.theme = ['light', 'dark'].includes(event.newValue) ? event.newValue : (systemTheme.matches ? 'light' : 'dark');
         syncTheme();
     });
-    const initial = normalizedHex(hex.value);
+    const initial = hex ? normalizedHex(hex.value) : null;
     if (initial) picker.value = initial;
-    picker.addEventListener('input', () => { hex.value = picker.value; hex.setCustomValidity(''); accent(); });
-    hex.addEventListener('input', () => {
+    picker?.addEventListener('input', () => { hex.value = picker.value; hex.setCustomValidity(''); accent(); });
+    hex?.addEventListener('input', () => {
         const value = normalizedHex(hex.value);
         hex.setCustomValidity(value ? '' : t('Saisissez une couleur HEX à trois ou six chiffres.'));
         if (value) { picker.value = value; accent(); }
@@ -76,24 +77,26 @@
     const output = document.getElementById('dispersionValue');
     const dispersion = document.getElementById('dispersionBlock');
     function syncMethod() {
+        if (!colorForm) return;
         const dominant = colorForm.elements.color_mode.value === 'dominant';
         dispersion.classList.toggle('inactive', dominant);
         slider.title = t(dominant ? 'Sans effet en mode Dominante' : 'Pénalité de dispersion');
         // Preserve the submitted slider value when switching methods.
     }
-    slider.addEventListener('input', () => { output.textContent = slider.value + ' %'; });
-    colorForm.addEventListener('input', () => {
+    slider?.addEventListener('input', () => { output.textContent = slider.value + ' %'; });
+    colorForm?.addEventListener('input', () => {
         draft.hidden = new URLSearchParams(new FormData(colorForm)).toString() === initialParams;
         syncMethod();
     });
     document.querySelectorAll('select[name="object_type"]').forEach(select => select.addEventListener('change', () => {
+        if (!colorForm) return;
         document.querySelectorAll('select[name="object_type"]').forEach(other => { other.value = select.value; });
         draft.hidden = new URLSearchParams(new FormData(colorForm)).toString() === initialParams;
     }));
     syncMethod();
     document.addEventListener('languagechange', () => {
         syncTheme(); syncMethod();
-        if (hex.validity.customError) hex.setCustomValidity(t('Saisissez une couleur HEX à trois ou six chiffres.'));
+        if (hex?.validity.customError) hex.setCustomValidity(t('Saisissez une couleur HEX à trois ou six chiffres.'));
     });
 
     const filterToggle = document.getElementById('filterToggle');
@@ -147,9 +150,9 @@
         inspector.scrollTop = 0;
         if (!inspector.open) showInspector();
     }
-    document.querySelector('.cards')?.addEventListener('click', event => {
+    document.addEventListener('click', event => {
         const button = event.target.closest('[data-inspect]');
-        if (button) inspect(button.closest('.card'), button);
+        if (button?.closest('.cards')) inspect(button.closest('.card'), button);
     });
     closeButton.addEventListener('click', () => inspector.close());
     inspector.addEventListener('close', () => {

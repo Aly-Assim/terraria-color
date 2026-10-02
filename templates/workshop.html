@@ -1,0 +1,36 @@
+{% extends 'index.html' %}
+{% block extra_assets %}
+<link rel="stylesheet" href="{{ url_for('static', filename='workshop.css') }}">
+<script src="{{ url_for('static', filename='workshop.js') }}" defer></script>
+{% endblock %}
+{% block catalog_panel %}
+<section class="filter-section" aria-labelledby="workshopSearchTitle">
+    <h2 id="workshopSearchTitle" data-i18n>Ajouter des matériaux</h2>
+    <form id="workshopSearch" action="{{ url_for('workshop_search') }}">
+        <label for="workshopQuery" data-i18n>Rechercher des blocs et des murs</label>
+        <div class="search-entry"><input id="workshopQuery" name="q" type="search" placeholder="Stone, wood, Soil Walls…" data-i18n-placeholder="Stone, wood, Soil Walls…" autocomplete="off"><button class="input-submit" type="submit" aria-label="Rechercher des matériaux" data-i18n-aria-label="Rechercher des matériaux">↗</button></div>
+        {% include 'partials_object_filter.html' %}
+        <p class="hint" data-i18n>Noms et catégories en anglais.</p>
+    </form>
+</section>
+<p id="workshopSearchStatus" class="hint" role="status" data-i18n>Saisissez un nom pour trouver des matériaux.</p>
+<ul id="workshopSuggestions" class="workshop-suggestions" aria-label="Matériaux trouvés" data-i18n-aria-label="Matériaux trouvés"></ul>
+{% endblock %}
+{% block color_panel %}{% endblock %}
+{% block method_help %}{% endblock %}
+{% block results_content %}
+<section id="results" tabindex="-1" aria-labelledby="resultsTitle" data-workshop data-item-base="{{ url_for('workshop_item', local_id=0, paint_id=0) }}">
+    <div class="results-toolbar"><div class="results-title"><h1 id="resultsTitle">Workshop</h1><span class="result-count"><span id="workshopCount">0</span> <span data-i18n>sélectionnés</span></span></div><button id="workshopClear" type="button" class="quiet-button" disabled data-i18n>Vider le Workshop</button></div>
+    <p class="hint workshop-intro" data-i18n>Comparez les textures côte à côte. Ajoutez plusieurs fois un matériau pour comparer ses peintures.</p>
+    <div class="workshop-actions">
+        <label for="workshopPaint" data-i18n>Peinture commune</label>
+        <select id="workshopPaint">{% for paint in paint_options %}<option value="{{ paint.id }}" data-i18n>{{ '%02d'|format(paint.id) }} · {{ paint.name }}</option>{% endfor %}</select>
+        <button id="workshopApply" type="button" class="quiet-button" disabled data-i18n>Appliquer à tous</button>
+    </div>
+    <p id="workshopNotice" class="hint" role="status"></p>
+    <p id="workshopStorageWarning" class="warning" role="status" hidden></p>
+    <noscript><p data-i18n>Activez JavaScript pour utiliser le Workshop. La recherche couleur reste accessible.</p><a href="{{ url_for('index', mode='color') }}">Color Search</a></noscript>
+    <div id="workshopEmpty" class="empty-state"><h2 data-i18n>Aucun matériau sélectionné</h2><p data-i18n>Recherchez un bloc ou un mur et ajoutez-le pour commencer la comparaison.</p><button id="workshopFind" class="quiet-button" type="button" data-i18n>Ajouter des matériaux</button></div>
+    <div id="workshopGrid" class="cards workshop-grid"></div>
+</section>
+{% endblock %}

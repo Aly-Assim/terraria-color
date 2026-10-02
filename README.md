@@ -41,9 +41,22 @@ Existing curated block assets under `images/world/` and `images/inventory/` are 
 Python 3.12 or newer is recommended.
 
 ```powershell
+git clone https://github.com/Aly-Assim/terraria-color.git
+cd terraria-color
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+python app.py
+```
+
+### Linux
+
+```bash
+git clone https://github.com/Aly-Assim/terraria-color.git
+cd terraria-color
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 python app.py
 ```
 

@@ -472,6 +472,150 @@ window.TerrariaTranslations = {
     "Deep Pink": {
       "fr": "Rose intense",
       "en": "Deep Pink"
+    },
+    "Workshop": {
+      "fr": "Workshop",
+      "en": "Workshop"
+    },
+    "Recherche couleur": {
+      "fr": "Recherche couleur",
+      "en": "Color Search"
+    },
+    "Navigation principale": {
+      "fr": "Navigation principale",
+      "en": "Main navigation"
+    },
+    "Ajouter des matériaux": {
+      "fr": "Ajouter des matériaux",
+      "en": "Add materials"
+    },
+    "Rechercher des blocs et des murs": {
+      "fr": "Rechercher des blocs et des murs",
+      "en": "Search blocks and walls"
+    },
+    "Rechercher des matériaux": {
+      "fr": "Rechercher des matériaux",
+      "en": "Search materials"
+    },
+    "Matériaux trouvés": {
+      "fr": "Matériaux trouvés",
+      "en": "Materials found"
+    },
+    "Saisissez un nom pour trouver des matériaux.": {
+      "fr": "Saisissez un nom pour trouver des matériaux.",
+      "en": "Enter a name to find materials."
+    },
+    "sélectionnés": {
+      "fr": "sélectionnés",
+      "en": "selected"
+    },
+    "Vider le Workshop": {
+      "fr": "Vider le Workshop",
+      "en": "Clear workshop"
+    },
+    "Comparez les textures côte à côte. Ajoutez plusieurs fois un matériau pour comparer ses peintures.": {
+      "fr": "Comparez les textures côte à côte. Ajoutez plusieurs fois un matériau pour comparer ses peintures.",
+      "en": "Compare textures side by side. Add a material more than once to compare its paints."
+    },
+    "Peinture commune": {
+      "fr": "Peinture commune",
+      "en": "Shared paint"
+    },
+    "Appliquer à tous": {
+      "fr": "Appliquer à tous",
+      "en": "Apply to all"
+    },
+    "Activez JavaScript pour utiliser le Workshop. La recherche couleur reste accessible.": {
+      "fr": "Activez JavaScript pour utiliser le Workshop. La recherche couleur reste accessible.",
+      "en": "Enable JavaScript to use Workshop. Color Search remains available."
+    },
+    "Aucun matériau sélectionné": {
+      "fr": "Aucun matériau sélectionné",
+      "en": "No materials selected"
+    },
+    "Recherchez un bloc ou un mur et ajoutez-le pour commencer la comparaison.": {
+      "fr": "Recherchez un bloc ou un mur et ajoutez-le pour commencer la comparaison.",
+      "en": "Search for a block or wall and add it to start comparing."
+    },
+    "Sauvegarde locale indisponible : cette sélection reste dans cet onglet.": {
+      "fr": "Sauvegarde locale indisponible : cette sélection reste dans cet onglet.",
+      "en": "Local saving is unavailable: this selection remains in this tab."
+    },
+    "Matériau retiré.": {
+      "fr": "Matériau retiré.",
+      "en": "Material removed."
+    },
+    "Aperçu peint indisponible.": {
+      "fr": "Aperçu peint indisponible.",
+      "en": "Painted preview unavailable."
+    },
+    "Retirer": {
+      "fr": "Retirer",
+      "en": "Remove"
+    },
+    "Matériau indisponible. Réessayez ou retirez-le de la sélection.": {
+      "fr": "Matériau indisponible. Réessayez ou retirez-le de la sélection.",
+      "en": "Material unavailable. Retry or remove it from the selection."
+    },
+    "Réessayer": {
+      "fr": "Réessayer",
+      "en": "Retry"
+    },
+    "Limite de 64 matériaux atteinte.": {
+      "fr": "Limite de 64 matériaux atteinte.",
+      "en": "The 64-material limit has been reached."
+    },
+    "Chargement…": {
+      "fr": "Chargement…",
+      "en": "Loading…"
+    },
+    "Matériau ajouté au Workshop.": {
+      "fr": "Matériau ajouté au Workshop.",
+      "en": "Material added to Workshop."
+    },
+    "Recherche en cours…": {
+      "fr": "Recherche en cours…",
+      "en": "Searching…"
+    },
+    "Ajoutez les matériaux à comparer (40 résultats maximum).": {
+      "fr": "Ajoutez les matériaux à comparer (40 résultats maximum).",
+      "en": "Add materials to compare (up to 40 results)."
+    },
+    "Ajouter": {
+      "fr": "Ajouter",
+      "en": "Add"
+    },
+    "Recherche indisponible. Réessayez.": {
+      "fr": "Recherche indisponible. Réessayez.",
+      "en": "Search unavailable. Please retry."
+    },
+    "Workshop vidé.": {
+      "fr": "Workshop vidé.",
+      "en": "Workshop cleared."
+    },
+    "Peinture appliquée à tous les matériaux.": {
+      "fr": "Peinture appliquée à tous les matériaux.",
+      "en": "Paint applied to all materials."
+    },
+    "Sélection sauvegardée illisible ou stockage inaccessible. Vous pouvez créer une nouvelle sélection.": {
+      "fr": "Sélection sauvegardée illisible ou stockage inaccessible. Vous pouvez créer une nouvelle sélection.",
+      "en": "Saved selection unreadable or storage inaccessible. You can create a new selection."
+    },
+    "Trouvez les matériaux les plus proches d’une couleur.": {
+      "fr": "Trouvez les matériaux les plus proches d’une couleur.",
+      "en": "Find the materials closest to a color."
+    },
+    "Choisissez une couleur, une méthode et une peinture, puis comparez les résultats et leurs mesures.": {
+      "fr": "Choisissez une couleur, une méthode et une peinture, puis comparez les résultats et leurs mesures.",
+      "en": "Choose a color, matching method and paint, then compare the results and their metrics."
+    },
+    "Comparer manuellement dans le Workshop": {
+      "fr": "Comparer manuellement dans le Workshop",
+      "en": "Compare manually in Workshop"
+    },
+    "Atlas communautaire": {
+      "fr": "Atlas communautaire",
+      "en": "Community atlas"
     }
   },
   "help": {

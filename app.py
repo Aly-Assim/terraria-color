@@ -5,7 +5,7 @@ from pathlib import Path
 import math
 import sqlite3
 
-from flask import Flask, abort, render_template, request, send_file, url_for
+from flask import Flask, abort, jsonify, render_template, request, send_file, url_for
 from PIL import Image
 
 
@@ -526,7 +526,9 @@ def row_to_card(
     }
 
 
-def search_catalog(query_text, limit=200, object_type="all"):
+def search_catalog(
+    query_text, limit=200, object_type="all", prioritize_name=False
+):
     object_type = normalize_object_type(object_type)
     query_text = query_text.strip().lower()
 
@@ -540,6 +542,20 @@ def search_catalog(query_text, limit=200, object_type="all"):
         cursor = connection.cursor()
         like_value = f"%{query_text}%"
 
+        ordering = "ORDER BY o.name"
+        ordering_parameters = []
+        if prioritize_name:
+            ordering = """
+            ORDER BY
+                CASE
+                    WHEN LOWER(TRIM(o.name)) = ? THEN 0
+                    WHEN SUBSTR(LOWER(TRIM(o.name)), 1, LENGTH(?)) = ? THEN 1
+                    ELSE 2
+                END,
+                o.name
+            """
+            ordering_parameters = [query_text, query_text, query_text]
+
         cursor.execute(
             query
             + """
@@ -548,7 +564,9 @@ def search_catalog(query_text, limit=200, object_type="all"):
                 OR LOWER(o.canonical_name) LIKE ?
                 OR LOWER(COALESCE(o.category_name, '')) LIKE ?
             ) AND (? = 'all' OR o.object_type = ?)
-            ORDER BY o.name
+            """
+            + ordering
+            + """
             LIMIT ?
             """,
             (
@@ -557,6 +575,7 @@ def search_catalog(query_text, limit=200, object_type="all"):
                 like_value,
                 object_type,
                 object_type,
+                *ordering_parameters,
                 limit,
             ),
         )
@@ -872,6 +891,67 @@ def index():
         paint_options=paint_options(),
 
         error=error,
+    )
+
+
+@app.get("/workshop")
+def workshop():
+    return render_template(
+        "workshop.html", mode="workshop", object_type="all",
+        object_types=OBJECT_TYPES, paint_options=paint_options(),
+    )
+
+
+@app.get("/api/workshop/search")
+def workshop_search():
+    # Reuse the existing name/category lookup; all connections are read-only.
+    query_text = request.args.get("q", "")
+    results = search_catalog(
+        query_text, limit=40,
+        object_type=request.args.get("object_type", "all"),
+        prioritize_name=True,
+    )
+    return jsonify([
+        {key: item[key] for key in (
+            "local_id", "name", "object_type", "inventory_image_url", "world_image_url"
+        )} for item in results
+    ])
+
+
+@app.get("/api/workshop/item/<int:local_id>/<int:paint_id>")
+def workshop_item(local_id, paint_id):
+    if paint_id not in PAINTS:
+        abort(404)
+    connection = connect_db()
+    try:
+        row = connection.execute(
+            base_select_query(connection) + " WHERE o.local_id = ?", (local_id,)
+        ).fetchone()
+        if row is None:
+            abort(404)
+        values = dict(row)
+        # Never present original metrics as measurements of a painted texture.
+        for key in ("avg_r", "avg_g", "avg_b", "avg_hex"):
+            values[key] = None
+        if paint_color_table_ready(connection):
+            metrics = connection.execute(
+                "SELECT * FROM object_paint_colors "
+                "WHERE local_id = ? AND paint_id = ? AND error IS NULL",
+                (local_id, paint_id),
+            ).fetchone()
+            if metrics is not None:
+                for key in (
+                    "avg_r", "avg_g", "avg_b", "avg_hex", "dominant_r",
+                    "dominant_g", "dominant_b", "dominant_hex", "dominant_ratio",
+                    "dispersion_oklab", "dispersion_norm",
+                ):
+                    values[key] = row_value(metrics, key)
+        values.update(paint_id=paint_id, paint_name=PAINTS[paint_id][1])
+    finally:
+        connection.close()
+    return render_template(
+        "partials_card.html", block=row_to_card(values),
+        mode="workshop", result_index=1,
     )
 
 

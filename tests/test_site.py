@@ -112,8 +112,38 @@ def main():
 
     print("[PASS] dynamic painted image")
 
+    response = client.get("/workshop")
+    assert_true(
+        response.status_code == 200 and b'data-workshop' in response.data,
+        f"Workshop returned {response.status_code}",
+    )
+
+    response = client.get(
+        "/api/workshop/search",
+        query_string={"q": "stone", "object_type": "wall"},
+    )
+    workshop_results = response.get_json()
+    assert_true(
+        response.status_code == 200
+        and workshop_results
+        and all(item["object_type"] == "wall" for item in workshop_results),
+        "Workshop wall search returned invalid results",
+    )
+
+    response = client.get(
+        f"/api/workshop/item/{row['local_id']}/{row['paint_id']}"
+    )
+    assert_true(
+        response.status_code == 200
+        and f"/painted-image/{row['local_id']}/{row['paint_id']}".encode()
+        in response.data,
+        "Workshop item did not use the painted-image endpoint",
+    )
+
+    print("[PASS] Workshop page, filtered search, and painted item")
+
     print()
-    print("4/4 test groups passed")
+    print("5/5 test groups passed")
     print("ALL SITE TESTS PASSED")
 
 

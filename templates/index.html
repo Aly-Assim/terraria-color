@@ -16,11 +16,16 @@
     <script src="{{ url_for('static', filename='translations.js') }}" defer></script>
     <script src="{{ url_for('static', filename='localization.js') }}" defer></script>
     <script src="{{ url_for('static', filename='ui.js') }}" defer></script>
+    {% block extra_assets %}{% endblock %}
 </head>
 <body data-mode="{{ mode }}">
     <a class="skip-link" href="#results"><span data-i18n>Aller aux résultats</span></a>
     <header class="topbar">
         <a class="brand" href="{{ url_for('index') }}">Terraria Color<span class="brand-divider" aria-hidden="true">/</span><span class="brand-context"><span data-i18n>Matériaux</span></span></a>
+        <nav class="app-nav" aria-label="Navigation principale" data-i18n-aria-label="Navigation principale">
+            <a href="{{ url_for('workshop') }}" {% if mode == 'workshop' %}aria-current="page"{% endif %}>Workshop</a>
+            <a href="{{ url_for('index', mode='color') }}" {% if mode != 'workshop' %}aria-current="page"{% endif %} data-i18n>Recherche couleur</a>
+        </nav>
         <div class="top-actions">
             <div class="language-switch" role="group" aria-label="Langue" data-i18n-aria-label="Langue" hidden><button type="button" data-language="fr" aria-label="Français" lang="fr">FR</button><button type="button" data-language="en" aria-label="English" lang="en">EN</button></div>
             <button id="filterToggle" class="quiet-button mobile-only" type="button" aria-expanded="false" aria-controls="filters" hidden><span data-i18n>Filtres</span> <span aria-hidden="true">≡</span></button>
@@ -30,18 +35,10 @@
     <main id="workspace" class="workspace">
         <aside id="filters" class="filters" aria-label="Recherche et filtres" data-i18n-aria-label="Recherche et filtres">
             <div class="filter-heading"><span class="eyebrow"><span data-i18n>Paramètres de recherche</span></span><button id="filterClose" class="quiet-button mobile-only" type="button" hidden><span data-i18n>Fermer ×</span></button></div>
-            <section class="filter-section" aria-labelledby="catalogTitle">
-                <h2 id="catalogTitle"><span data-i18n>Catalogue</span> <span class="section-index">01</span></h2>
-                <form id="catalogForm" method="get">
-                    <input type="hidden" name="mode" value="catalog">
-                    <label for="q"><span data-i18n>Nom ou catégorie</span></label>
-                    <div class="search-entry"><input id="q" name="q" type="search" value="{{ catalog_query }}" placeholder="Stone, wood, Soil Walls…" data-i18n-placeholder="Stone, wood, Soil Walls…"><button class="input-submit" type="submit" aria-label="Rechercher dans le catalogue" data-i18n-aria-label="Rechercher dans le catalogue">↗</button></div>
-                    {% include 'partials_object_filter.html' %}
-                    <p class="hint"><span data-i18n>Noms et catégories en anglais.</span></p>
-                </form>
-            </section>
+            {% block catalog_panel %}{% endblock %}
+            {% block color_panel %}
             <section class="filter-section" aria-labelledby="colorTitle">
-                <h2 id="colorTitle"><span data-i18n>Couleur</span> <span class="section-index">02</span></h2>
+                <h2 id="colorTitle"><span data-i18n>Recherche couleur</span> <span class="section-index">01</span></h2>
                 <form id="colorForm" method="get">
                     <input type="hidden" name="mode" value="color">
                     <label for="colorInput"><span data-i18n>Couleur cible</span></label>
@@ -58,9 +55,13 @@
                     <p id="draftNotice" class="hint draft-notice" hidden><span data-i18n>Paramètres modifiés · appliquer pour actualiser.</span></p>
                 </form>
             </section>
+            {% endblock %}
+            {% block method_help %}
             <details class="method-help"><summary><span data-i18n>Lire les mesures</span></summary><p><span data-i18n>La moyenne est calculée en lumière linéaire. La dominante représente le groupe de couleurs principal.</span></p><p><span data-i18n>La distance OKLab mesure l'écart perceptuel : plus elle est petite, plus les couleurs sont proches. En Moyenne, le score ajoute la pénalité de dispersion.</span></p></details>
+            {% endblock %}
         </aside>
         <div class="content">
+            {% block results_content %}
             {% set results = catalog_results if mode == 'catalog' else color_results %}
             <section id="results" class="results" aria-labelledby="resultsTitle" tabindex="-1">
                 <div class="results-toolbar"><div><div class="results-title"><h1 id="resultsTitle"><span data-i18n>{{ 'Résultats' if mode in ['catalog', 'color'] else 'Explorer les matériaux' }}</span></h1>{% if mode in ['catalog', 'color'] %}<span class="result-count" data-i18n>{{ results|length }} résultat(s)</span>{% endif %}</div></div><span class="toolbar-note"><span data-i18n>{{ 'Classés par score' if mode == 'color' and color_mode == 'average' else 'Classés par distance' if mode == 'color' else 'Blocs / Murs' }}</span></span></div>
@@ -70,9 +71,10 @@
                 {% if error %}<div class="message error" role="alert" data-i18n>{{ error }}</div>{% endif %}
                 {% if results %}<div class="cards">{% for block in results %}{% set result_index = loop.index %}{% include 'partials_card.html' %}{% endfor %}</div>
                 {% elif mode in ['catalog', 'color'] and not error %}<div class="empty-state"><span class="empty-index" aria-hidden="true">Ø</span><h2><span data-i18n>Aucun matériau trouvé</span></h2><p><span data-i18n>Modifiez le nom, la catégorie ou le type d’objet, puis relancez la recherche.</span></p></div>
-                {% elif not error %}<div class="start-state"><div class="start-heading"><span class="empty-index" aria-hidden="true">01—02</span><h2><span data-i18n>Rechercher un matériau ou comparer une couleur.</span></h2><p><span data-i18n>Utilisez les filtres pour parcourir les blocs et les murs, puis ouvrez une fiche pour examiner ses textures et ses mesures.</span></p></div><div class="quick-searches">{% for query, label, code in [('stone', 'Pierre', '01'), ('wood', 'Bois', '02'), ('brick', 'Briques', '03'), ('Soil Walls', 'Murs de terre', '04')] %}<a href="{{ url_for('index', mode='catalog', q=query, object_type='all') }}"><span class="mono">{{ code }}</span><strong><span data-i18n>{{ label }}</span></strong><span aria-hidden="true">↗</span></a>{% endfor %}</div></div>{% endif %}
+                {% elif not error %}<div class="start-state"><div class="start-heading"><span class="empty-index" aria-hidden="true">01</span><h2><span data-i18n>Trouvez les matériaux les plus proches d’une couleur.</span></h2><p><span data-i18n>Choisissez une couleur, une méthode et une peinture, puis comparez les résultats et leurs mesures.</span></p><a class="quiet-button start-workshop-link" href="{{ url_for('workshop') }}"><span data-i18n>Comparer manuellement dans le Workshop</span> <span aria-hidden="true">↗</span></a></div></div>{% endif %}
             </section>
-            <footer>Terraria / Re-Logic <span aria-hidden="true">·</span> <span data-i18n>Catalogue communautaire</span></footer>
+            {% endblock %}
+            <footer>Terraria / Re-Logic <span aria-hidden="true">·</span> <span data-i18n>Atlas communautaire</span></footer>
         </div>
     </main>
     <dialog id="inspector" class="inspector" aria-labelledby="inspectorTitle"><div class="inspector-heading"><span class="eyebrow"><span data-i18n>Fiche matériau</span></span><button id="inspectorClose" class="quiet-button" type="button" aria-label="Fermer la fiche" data-i18n-aria-label="Fermer la fiche"><span data-i18n>Fermer ×</span></button></div><div id="inspectorContent"></div></dialog>

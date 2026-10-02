@@ -1,0 +1,28 @@
+/* Workshop-only layout; the existing color search stylesheet is unchanged. */
+.workshop-suggestions { list-style: none; padding: 0; margin: 12px 0; }
+.workshop-suggestions li { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.workshop-suggestions img { width: 30px; height: 30px; image-rendering: pixelated; object-fit: contain; }
+.workshop-suggestions strong { display: block; font-size: 12px; font-weight: 500; overflow-wrap: anywhere; }
+.workshop-suggestions small { color: var(--text-muted); font-size: 10px; }
+.workshop-suggestions .quiet-button { padding: 4px 6px; font-size: 11px; }
+.workshop-intro { margin-bottom: 16px; }
+.workshop-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px 0; border-block: 1px solid var(--border); }
+.workshop-actions select { width: 180px; }
+#workshopNotice { min-height: 17px; margin-bottom: 12px; }
+.workshop-grid .card-overline > .mono, .workshop-grid .match-line, .workshop-grid .paint-line { display: none; }
+.workshop-grid .image-zone { height: 180px; }
+.workshop-grid .world-img { width: 144px; height: 144px; max-width: 144px; max-height: 144px; }
+.workshop-item-controls { padding: 8px 12px 12px; display: flex; align-items: end; gap: 8px; }
+.workshop-item-controls label { flex: 1; min-width: 0; }
+.workshop-item-controls label > span { display: block; margin-bottom: 4px; }
+.workshop-slot { min-width: 0; }
+.workshop-slot[aria-busy='true'] .world-img { opacity: .45; }
+.workshop-slot .workshop-unavailable { padding: 16px; border: 1px solid var(--border); border-radius: 7px; }
+.workshop-unavailable .quiet-button { margin-right: 8px; }
+.workshop-grid .preview-error { padding: 12px; font-size: 12px; color: var(--text-muted); text-align: center; }
+body[data-mode='workshop'] .filters { max-height: calc(100dvh - 60px); }
+@media (max-width: 800px) {
+    body[data-mode='workshop'] .filters { max-height: 65dvh; overflow-y: auto; }
+    .workshop-actions label { flex-basis: 100%; }
+    #results .results-toolbar { flex-wrap: wrap; }
+}
