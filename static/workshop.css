@@ -20,7 +20,7 @@
 .workshop-slot .workshop-unavailable { padding: 16px; border: 1px solid var(--border); border-radius: 7px; }
 .workshop-unavailable .quiet-button { margin-right: 8px; }
 .workshop-grid .preview-error { padding: 12px; font-size: 12px; color: var(--text-muted); text-align: center; }
-body[data-mode='workshop'] .filters { max-height: calc(100dvh - 60px); }
+body[data-mode='workshop'] .filters { max-height: calc(100dvh - 66px); }
 @media (max-width: 800px) {
     body[data-mode='workshop'] .filters { max-height: 65dvh; overflow-y: auto; }
     .workshop-actions label { flex-basis: 100%; }
