@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='translations.js') }}" defer></script>
     <script src="{{ url_for('static', filename='localization.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='workshop_store.js') }}" defer></script>
     <script src="{{ url_for('static', filename='ui.js') }}" defer></script>
     {% block extra_assets %}{% endblock %}
 </head>
@@ -24,7 +25,8 @@
         <a class="brand" href="{{ url_for('index') }}">Terraria Color<span class="brand-divider" aria-hidden="true">/</span><span class="brand-context"><span data-i18n>Matériaux</span></span></a>
         <nav class="app-nav" aria-label="Navigation principale" data-i18n-aria-label="Navigation principale">
             <a href="{{ url_for('workshop') }}" {% if mode == 'workshop' %}aria-current="page"{% endif %}>Workshop</a>
-            <a href="{{ url_for('index', mode='color') }}" {% if mode != 'workshop' %}aria-current="page"{% endif %} data-i18n>Recherche couleur</a>
+            <a href="{{ url_for('index', mode='color') }}" {% if mode not in ['workshop', 'sketch'] %}aria-current="page"{% endif %} data-i18n>Recherche couleur</a>
+            <a href="{{ url_for('sketch_search') }}" {% if mode == 'sketch' %}aria-current="page"{% endif %}>Sketch Search</a>
         </nav>
         <div class="top-actions">
             <div class="language-switch" role="group" aria-label="Langue" data-i18n-aria-label="Langue" hidden><button type="button" data-language="fr" aria-label="Français" lang="fr">FR</button><button type="button" data-language="en" aria-label="English" lang="en">EN</button></div>

@@ -1,0 +1,53 @@
+{% extends 'index.html' %}
+{% block extra_assets %}
+<link rel="stylesheet" href="{{ url_for('static', filename='sketch_search.css') }}">
+<script src="{{ url_for('static', filename='sketch_search.js') }}" defer></script>
+{% endblock %}
+{% block catalog_panel %}
+<section class="filter-section" aria-labelledby="sketchToolsTitle">
+    <h2 id="sketchToolsTitle"><span data-i18n>Outils de dessin</span> <span class="section-index">01</span></h2>
+    <label for="brushSize" data-i18n>Taille du pinceau</label>
+    <select id="brushSize"><option value="1">1</option><option value="2">2</option><option value="4" selected>4</option><option value="6">6</option></select>
+    <div class="sketch-tool-grid" role="group" aria-label="Outils de dessin" data-i18n-aria-label="Outils de dessin">
+        <button id="drawMode" class="quiet-button" type="button" data-i18n>Dessiner</button>
+        <button id="lineMode" class="quiet-button" type="button" data-i18n>Ligne</button>
+        <button id="eraseMode" class="quiet-button" type="button" data-i18n>Effacer</button>
+        <button id="clearCanvas" class="quiet-button" type="button" data-i18n>Vider</button>
+    </div>
+</section>
+<section class="filter-section" aria-labelledby="sketchMethodTitle">
+    <h2 id="sketchMethodTitle"><span data-i18n>Méthode de contours</span> <span class="section-index">02</span></h2>
+    <fieldset class="method-field sketch-method"><legend class="sr-only" data-i18n>Méthode de contours</legend><div class="segmented">
+        <label><input type="radio" name="edge_method" value="sobel" checked {% if 'sobel' not in available_methods %}disabled{% endif %}><span data-i18n>Détaillé</span></label>
+        <label><input type="radio" name="edge_method" value="canny" {% if 'canny' not in available_methods %}disabled{% endif %}><span data-i18n>Contours nets</span></label>
+    </div></fieldset>
+    <p class="hint"><strong data-i18n>Détaillé</strong> — <span data-i18n>Conserve davantage de détails de texture.</span></p>
+    <p class="hint"><strong data-i18n>Contours nets</strong> — <span data-i18n>Se concentre sur les contours les plus marqués.</span></p>
+    <label for="resultCount" data-i18n>Nombre de résultats</label>
+    <select id="resultCount"><option value="5">5</option><option value="10" selected>10</option><option value="20">20</option></select>
+    <button id="searchSketch" class="search-button" type="button" {% if not index_ready %}disabled{% endif %}><span data-i18n>Rechercher par croquis</span><span aria-hidden="true">↗</span></button>
+    {% if not index_ready %}<p class="warning" role="alert" data-i18n>Les index Sketch Search sont indisponibles.</p>{% endif %}
+</section>
+{% endblock %}
+{% block color_panel %}{% endblock %}
+{% block method_help %}{% endblock %}
+{% block results_content %}
+<section id="results" class="results sketch-search" aria-labelledby="resultsTitle" tabindex="-1">
+    <div class="results-toolbar"><div class="results-title"><h1 id="resultsTitle">Sketch Search</h1><span id="sketchResultCount" class="result-count" data-i18n>Aucun résultat</span></div><span class="toolbar-note" data-i18n>Blocs 48×48</span></div>
+    <p class="hint sketch-intro" data-i18n>Dessinez la structure principale d’un bloc, puis recherchez les textures visuellement proches.</p>
+    <div class="sketch-layout">
+        <div class="sketch-board">
+            <div class="canvas-frame">
+                <canvas id="sketchCanvas" width="48" height="48" aria-label="Canvas de dessin 48 par 48" data-i18n-aria-label="Canvas de dessin 48 par 48"></canvas>
+                <div class="canvas-grid" aria-hidden="true"></div>
+            </div>
+            <p id="sketchStatus" class="hint" role="status" aria-live="polite"></p>
+        </div>
+        <div class="sketch-results-panel">
+            <div id="sketchEmpty" class="empty-state"><span class="empty-index" aria-hidden="true">48</span><h2 data-i18n>Dessinez une texture</h2><p data-i18n>Utilisez des formes simples et les structures principales du matériau.</p></div>
+            <div id="sketchResults" class="cards sketch-cards"></div>
+        </div>
+    </div>
+    <noscript><p class="error" data-i18n>Activez JavaScript pour utiliser Sketch Search.</p></noscript>
+</section>
+{% endblock %}

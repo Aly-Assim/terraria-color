@@ -5,6 +5,7 @@ from pathlib import Path
 import math
 import sqlite3
 
+import numpy as np
 from flask import Flask, abort, jsonify, render_template, request, send_file, url_for
 from PIL import Image
 
@@ -12,6 +13,13 @@ from PIL import Image
 from scripts.paths import PROJECT_ROOT, DB_PATH, IMAGES_ROOT, connect_readonly
 from scripts.paint.renderer import PAINTS, apply_paint
 from scripts.catalog import OBJECT_TYPES, normalize_object_type
+from scripts.texture_signature.hog_index import (
+    block_hog_index_path,
+    load_block_hog_index,
+)
+from scripts.texture_signature.hog_matcher import match_hog_signature
+from scripts.texture_signature.hog_pipeline import extract_hog_feature
+from scripts.texture_signature.config import EDGE_METHODS
 
 
 app = Flask(__name__)
@@ -20,6 +28,91 @@ app = Flask(__name__)
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/sketch-search")
+def sketch_search():
+    available_methods = [
+        method for method in EDGE_METHODS if block_hog_index_path(method).is_file()
+    ]
+    return render_template(
+        "sketch_search.html",
+        mode="sketch",
+        index_ready=bool(available_methods),
+        available_methods=available_methods,
+    )
+
+
+@app.post("/api/sketch-search/match")
+def sketch_search_match():
+    payload = request.get_json(silent=True) or {}
+    try:
+        edge_method = str(payload.get("edge_method", "sobel"))
+        if edge_method not in EDGE_METHODS:
+            raise ValueError("Edge method must be 'sobel' or 'canny'.")
+        index_path = block_hog_index_path(edge_method)
+        if not index_path.is_file():
+            return jsonify({
+                "error": f"Sketch Search index for {edge_method} not found.",
+                "command": (
+                    "python -m scripts.texture_signature.cli hog-index block "
+                    f"--edge-method {edge_method}"
+                ),
+            }), 503
+        pixels = np.asarray(payload.get("pixels"), dtype=np.float32)
+        if pixels.size != 48 * 48 or not np.all(np.isfinite(pixels)):
+            raise ValueError("Sketch must contain exactly 48x48 grayscale pixels.")
+        k = int(payload.get("k", 10))
+        if not 1 <= k <= 20:
+            raise ValueError("K must be between 1 and 20.")
+
+        index = load_block_hog_index(edge_method)
+        sketch = Image.fromarray(
+            np.clip(pixels.reshape((48, 48)), 0, 255).astype(np.uint8),
+            mode="L",
+        )
+        signature = extract_hog_feature(
+            sketch,
+            edge_method=edge_method,
+            object_type="block",
+        )
+        matches = match_hog_signature(signature, index, k=k)
+
+        connection = connect_db()
+        try:
+            cards = []
+            for result_index, match in enumerate(matches, start=1):
+                row = connection.execute(
+                    base_select_query(connection) + " WHERE o.local_id = ?",
+                    (match.local_id,),
+                ).fetchone()
+                if row is None:
+                    continue
+                cards.append({
+                    "local_id": match.local_id,
+                    "name": match.name,
+                    "similarity": match.similarity,
+                    "html": render_template(
+                        "partials_card.html",
+                        block=row_to_card(row),
+                        mode="sketch",
+                        result_index=result_index,
+                    ),
+                })
+        finally:
+            connection.close()
+    except (TypeError, ValueError) as error:
+        message = str(error)
+        return jsonify({
+            "error": message,
+            "code": "empty_sketch" if message == "Draw something before searching." else "invalid_request",
+        }), 400
+    except (OSError, KeyError) as error:
+        return jsonify({"error": f"Could not load HOG test index: {error}"}), 503
+
+    return jsonify({
+        "results": cards,
+    })
 
 
 # Maximum additive penalty, expressed in OKLab-distance units.
