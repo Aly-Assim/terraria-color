@@ -13,14 +13,19 @@
   const count = document.getElementById('sketchResultCount');
   const results = document.getElementById('sketchResults');
   const empty = document.getElementById('sketchEmpty');
+  const storageKey = 'terraria-color-sketch-v1';
   let drawing = false;
   let mode = 'draw';
   let lineStart = null;
   let lineSnapshot = null;
 
-  function clearCanvas() {
+  function saveCanvas() {
+    try { sessionStorage.setItem(storageKey, canvas.toDataURL('image/png')); } catch (_) { /* Session persistence is optional. */ }
+  }
+  function clearCanvas(forget = true) {
     context.fillStyle = '#fff';
     context.fillRect(0, 0, 48, 48);
+    if (forget) try { sessionStorage.removeItem(storageKey); } catch (_) { /* Canvas still works without storage. */ }
     results.replaceChildren();
     empty.hidden = false;
     status.textContent = '';
@@ -64,7 +69,7 @@
     else paint(event);
   });
   canvas.addEventListener('pointermove', event => { if (drawing) mode === 'line' ? previewLine(event) : paint(event); });
-  canvas.addEventListener('pointerup', event => { if (drawing && mode === 'line') previewLine(event); drawing = false; lineStart = lineSnapshot = null; });
+  canvas.addEventListener('pointerup', event => { if (drawing && mode === 'line') previewLine(event); if (drawing) saveCanvas(); drawing = false; lineStart = lineSnapshot = null; });
   canvas.addEventListener('pointercancel', () => { if (lineSnapshot) context.putImageData(lineSnapshot, 0, 0); drawing = false; lineStart = lineSnapshot = null; });
   drawButton.addEventListener('click', () => setMode('draw'));
   lineButton.addEventListener('click', () => setMode('line'));
@@ -98,5 +103,13 @@
     finally { searchButton.disabled = false; }
   });
   document.addEventListener('languagechange', () => { if (!results.children.length) count.textContent = t('Aucun résultat'); });
-  clearCanvas(); setMode('draw');
+  clearCanvas(false); setMode('draw');
+  try {
+    const saved = sessionStorage.getItem(storageKey);
+    if (saved) {
+      const image = new Image();
+      image.addEventListener('load', () => context.drawImage(image, 0, 0, 48, 48), {once: true});
+      image.src = saved;
+    }
+  } catch (_) { /* Canvas remains available without session storage. */ }
 })();
