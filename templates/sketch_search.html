@@ -18,8 +18,8 @@
 <section class="filter-section" aria-labelledby="sketchMethodTitle">
     <h2 id="sketchMethodTitle"><span data-i18n>Méthode de contours</span> <span class="section-index">02</span></h2>
     <fieldset class="method-field sketch-method"><legend class="sr-only" data-i18n>Méthode de contours</legend><div class="segmented">
-        <label><input type="radio" name="edge_method" value="sobel" checked {% if 'sobel' not in available_methods %}disabled{% endif %}><span data-i18n>Détaillé</span></label>
-        <label><input type="radio" name="edge_method" value="canny" {% if 'canny' not in available_methods %}disabled{% endif %}><span data-i18n>Contours nets</span></label>
+        <label><input type="radio" name="edge_method" value="sobel" {% if 'sobel' in available_methods %}checked{% else %}disabled{% endif %}><span data-i18n>Détaillé</span></label>
+        <label><input type="radio" name="edge_method" value="canny" {% if 'sobel' not in available_methods and 'canny' in available_methods %}checked{% elif 'canny' not in available_methods %}disabled{% endif %}><span data-i18n>Contours nets</span></label>
     </div></fieldset>
     <p class="hint"><strong data-i18n>Détaillé</strong> — <span data-i18n>Conserve davantage de détails de texture.</span></p>
     <p class="hint"><strong data-i18n>Contours nets</strong> — <span data-i18n>Se concentre sur les contours les plus marqués.</span></p>

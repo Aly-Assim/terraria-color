@@ -1,0 +1,68 @@
+{% extends 'index.html' %}
+{% from 'macros_help.html' import help_icon %}
+{% block extra_assets %}
+<link rel="stylesheet" href="{{ url_for('static', filename='palette_create.css') }}">
+<script src="{{ url_for('static', filename='palette_share_code.js') }}" defer></script>
+<script src="{{ url_for('static', filename='palette_expiry.js') }}" defer></script>
+<script src="{{ url_for('static', filename='palette_create.js') }}" defer></script>
+{% endblock %}
+{% block catalog_panel %}
+<p class="hint" data-i18n>Créez une palette, choisissez une couleur, puis comparez les matériaux.</p>
+{% endblock %}
+{% block method_help %}{{ super() }}{% endblock %}
+{% block results_content %}
+<section id="results" tabindex="-1" class="palette-page">
+  <div class="results-toolbar"><div class="results-title"><h1 data-i18n>Palette Create</h1><span class="result-count" data-i18n>Brouillon local</span></div><button id="togglePaletteHelp" class="quiet-button" type="button" aria-pressed="true" data-i18n>Masquer les aides</button></div>
+  <div id="paletteMessage" class="message" role="status" aria-live="polite" hidden></div>
+  <div class="palette-create-layout">
+    <section class="palette-panel" aria-labelledby="createTitle">
+      <div class="palette-section-title"><span class="eyebrow">01 · CREATE</span><h2 id="createTitle" data-i18n>Créer une palette</h2></div>
+      <form id="generateForm" class="palette-form">
+        <div class="palette-fields">
+          <div class="palette-field"><div class="palette-field-heading"><label for="paletteMode" data-i18n>Mode</label><span class="palette-help">{{ help_icon('palette_mode') }}</span></div><select id="paletteMode" name="mode"><option value="analogous" data-i18n>Analogous</option><option value="complementary" data-i18n>Complementary</option></select></div>
+          <div class="palette-field"><div class="palette-field-heading"><label for="paletteSeed" data-i18n>Couleur seed (facultative)</label><span class="palette-help">{{ help_icon('palette_seed') }}</span></div><input id="paletteSeed" name="seed_color" type="text" placeholder="#8a6a4b" spellcheck="false"></div>
+          <div class="palette-field"><div class="palette-field-heading"><label for="paletteSize" data-i18n>Taille de palette</label><span class="palette-help">{{ help_icon('palette_size') }}</span></div><input id="paletteSize" name="palette_size" type="number" min="1" max="256" value="5" required></div>
+        </div>
+        <div id="generationSteps" class="palette-fields palette-steps">
+          <div class="palette-field"><div class="palette-field-heading"><label for="paletteLightness" data-i18n>Pas de luminosité</label><span class="palette-help">{{ help_icon('palette_lightness') }}</span></div><input id="paletteLightness" name="lightness_step" type="number" step="any" value="0.08"></div>
+          <div class="palette-field"><div class="palette-field-heading"><label for="paletteGreenRed" data-i18n>Pas vert / rouge</label><span class="palette-help">{{ help_icon('palette_green_red') }}</span></div><input id="paletteGreenRed" name="green_red_step" type="number" step="any" value="0.02"></div>
+          <div class="palette-field"><div class="palette-field-heading"><label for="paletteBlueYellow" data-i18n>Pas bleu / jaune</label><span class="palette-help">{{ help_icon('palette_blue_yellow') }}</span></div><input id="paletteBlueYellow" name="blue_yellow_step" type="number" step="any" value="0.02"></div>
+        </div>
+        <div class="palette-actions"><button class="search-button" type="submit" data-i18n>Générer</button><button id="rerollSeed" class="quiet-button" type="button" data-i18n>Reroll seed</button><button id="newManual" class="quiet-button" type="button" data-i18n>Palette manuelle</button><button id="openAugment" class="quiet-button" type="button" aria-expanded="false" aria-controls="augmentPanel" data-i18n>Augmenter</button></div>
+      </form>
+      <section class="palette-augment" id="augmentPanel" hidden aria-label="Augmenter cette palette" data-i18n-aria-label="Augmenter cette palette">
+        <h3 data-i18n>Augmenter cette palette</h3>
+        <p class="hint palette-tutorial" data-i18n>Chaque couleur source produit une sous-palette. Les pas laissés vides sont tirés une fois et partagés.</p>
+        <form id="augmentForm">
+          <div class="palette-fields">
+            <div class="palette-field"><div class="palette-field-heading"><label for="augmentFactor" data-i18n>Couleurs par source</label><span class="palette-help">{{ help_icon('palette_factor') }}</span></div><input id="augmentFactor" name="factor" type="number" min="1" max="256" value="5" required></div>
+            <div class="palette-field"><div class="palette-field-heading"><label for="augmentLightness" data-i18n>Pas de luminosité (facultatif)</label><span class="palette-help">{{ help_icon('palette_augment_steps') }}</span></div><input id="augmentLightness" name="lightness_step" type="number" step="any" placeholder="auto"></div>
+            <div class="palette-field"><div class="palette-field-heading"><label for="augmentGreenRed" data-i18n>Pas vert / rouge (facultatif)</label><span class="palette-help">{{ help_icon('palette_augment_steps') }}</span></div><input id="augmentGreenRed" name="green_red_step" type="number" step="any" placeholder="auto"></div>
+            <div class="palette-field"><div class="palette-field-heading"><label for="augmentBlueYellow" data-i18n>Pas bleu / jaune (facultatif)</label><span class="palette-help">{{ help_icon('palette_augment_steps') }}</span></div><input id="augmentBlueYellow" name="blue_yellow_step" type="number" step="any" placeholder="auto"></div>
+          </div>
+          <div class="palette-actions"><button class="search-button" type="submit" data-i18n>Augmenter</button><button id="rerollSteps" class="quiet-button" type="button" data-i18n>Reroll steps</button><span class="palette-help">{{ help_icon('palette_reroll_augment') }}</span></div>
+        </form>
+      </section>
+      <div class="palette-section-title"><span class="eyebrow">02 · PREVIEW</span><h2 data-i18n>Palette courante</h2></div>
+      <p class="hint" data-i18n>Chaque palette temporaire expire 24 h après sa dernière modification. Exporte son code pour la conserver.</p>
+      <label for="paletteHistory" data-i18n>Palettes de cette session</label><select id="paletteHistory"></select>
+      <div class="palette-library-actions"><button id="renamePalette" class="quiet-button" type="button" data-i18n>Renommer la palette</button><button id="exportPalette" class="quiet-button" type="button" data-i18n>Exporter le code</button><button id="importPalette" class="quiet-button" type="button" data-i18n>Importer un code</button><button id="deletePalette" class="quiet-button" type="button" data-i18n>Supprimer la palette</button></div>
+      <div id="renamePalettePanel" class="palette-inline-action" hidden><label for="paletteName" data-i18n>Nom de la palette</label><input id="paletteName" type="text" maxlength="80"><button id="savePaletteName" class="quiet-button" type="button" data-i18n>Enregistrer</button><button id="cancelPaletteName" class="quiet-button" type="button" data-i18n>Annuler</button></div>
+      <div id="exportPalettePanel" class="palette-inline-action palette-share-panel" hidden><label for="paletteExportCode" data-i18n>Code à partager</label><textarea id="paletteExportCode" rows="3" readonly spellcheck="false"></textarea><button id="copyPaletteCode" class="quiet-button" type="button" data-i18n>Copier le code</button><button id="closePaletteExport" class="quiet-button" type="button" data-i18n>Fermer</button><span id="paletteCopyStatus" role="status"></span></div>
+      <div id="importPalettePanel" class="palette-inline-action palette-share-panel" hidden><label for="paletteImportCode" data-i18n>Coller un code de palette</label><textarea id="paletteImportCode" rows="3" maxlength="4096" spellcheck="false"></textarea><button id="confirmImportPalette" class="quiet-button" type="button" data-i18n>Importer</button><button id="cancelImportPalette" class="quiet-button" type="button" data-i18n>Annuler</button><span id="paletteImportError" role="alert"></span></div>
+      <div id="deletePalettePanel" class="palette-inline-action" hidden role="group" aria-label="Confirmer la suppression" data-i18n-aria-label="Confirmer la suppression"><span data-i18n>Supprimer cette palette et ses associations ?</span><button id="confirmDeletePalette" class="quiet-button palette-danger" type="button" data-i18n>Confirmer la suppression</button><button id="cancelDeletePalette" class="quiet-button" type="button" data-i18n>Annuler</button></div>
+      <div id="paletteSwatches" class="palette-swatches" aria-label="Couleurs de la palette" data-i18n-aria-label="Couleurs de la palette"></div>
+      <div id="paletteSource" class="palette-source" hidden><span class="eyebrow" data-i18n>Palette source</span><div id="paletteSourceColors" class="palette-source-colors"></div></div>
+      <div class="palette-edit"><label for="manualHex" data-i18n>Ajouter ou modifier une couleur HEX</label><div class="palette-edit-row"><input id="manualHex" type="text" placeholder="#8a6a4b" spellcheck="false"><button id="addColor" class="quiet-button" type="button" data-i18n>Ajouter</button><button id="editColor" class="quiet-button" type="button" data-i18n>Modifier</button><button id="removeColor" class="quiet-button" type="button" data-i18n>Supprimer</button><button id="moveColorUp" class="quiet-button" type="button" aria-label="Déplacer à gauche" data-i18n-aria-label="Déplacer à gauche">←</button><button id="moveColorDown" class="quiet-button" type="button" aria-label="Déplacer à droite" data-i18n-aria-label="Déplacer à droite">→</button></div></div>
+    </section>
+    <section class="palette-panel palette-materials" aria-labelledby="materialTitle">
+      <div class="palette-section-title"><span class="eyebrow">03 · MATERIALS</span><h2 id="materialTitle" data-i18n>Matériaux Terraria</h2></div>
+      <p id="activeColorLabel" class="palette-active" data-i18n>Choisissez une couleur dans la palette.</p>
+      <div class="palette-associated-heading"><h3 data-i18n>Matériaux associés</h3><button id="importPaletteWorkshop" class="quiet-button" type="button" data-i18n>Tout ajouter au Workshop</button></div><div id="paletteSelected" class="palette-selected"></div>
+      <div class="palette-section-title palette-search-heading"><h3 data-i18n>Recherche couleur</h3><span id="paletteResultCount" class="result-count"></span></div>
+      <p id="paletteSearchStatus" class="hint" role="status" data-i18n>Choisissez une couleur pour lancer la recherche.</p>
+      <div id="paletteResults" class="cards"></div>
+    </section>
+  </div>
+</section>
+{% endblock %}

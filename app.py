@@ -20,9 +20,11 @@ from scripts.texture_signature.hog_index import (
 from scripts.texture_signature.hog_matcher import match_hog_signature
 from scripts.texture_signature.hog_pipeline import extract_hog_feature
 from scripts.texture_signature.config import EDGE_METHODS
+from palette_creator.routes import palette_api
 
 
 app = Flask(__name__)
+app.register_blueprint(palette_api)
 
 
 @app.get("/health")
@@ -45,7 +47,9 @@ def sketch_search():
 
 @app.post("/api/sketch-search/match")
 def sketch_search_match():
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Request body must be a JSON object.", "code": "invalid_request"}), 400
     try:
         edge_method = str(payload.get("edge_method", "sobel"))
         if edge_method not in EDGE_METHODS:
@@ -991,6 +995,46 @@ def index():
 
         error=error,
     )
+
+
+@app.get("/palette-create")
+def palette_create():
+    return render_template(
+        "palette_create.html", mode="palette", color_value="#8a6a4b",
+        color_mode="average", dispersion_weight=35, paint_filter="all",
+        object_type="all", object_types=OBJECT_TYPES, k=20,
+        paint_options=paint_options(),
+    )
+
+
+@app.get("/api/palette-create/search")
+def palette_create_search():
+    color = request.args.get("color", "")
+    color_mode = request.args.get("color_mode", "average")
+    paint_filter = request.args.get("paint", "all")
+    object_type = normalize_object_type(request.args.get("object_type", "all"))
+    if color_mode not in {"average", "dominant"}:
+        color_mode = "average"
+    if paint_filter != "all" and paint_filter not in {str(key) for key in PAINTS}:
+        paint_filter = "all"
+    try:
+        color = rgb_to_hex(*hex_to_rgb(color))
+        results, error = search_by_color(
+            color, safe_int(request.args.get("k"), 20, 1, 200), color_mode,
+            safe_int(request.args.get("dispersion"), 35, 0, 100),
+            paint_filter, object_type,
+        )
+        if error:
+            return jsonify({"error": error}), 400
+        return jsonify({"results": [
+            {"local_id": block["local_id"], "paint_id": block["paint_id"],
+             "name": block["name"], "paint_name": block["paint_name"],
+             "image_url": block["painted_image_url"] or block["world_image_url"],
+             "html": render_template("partials_card.html", block=block, mode="color", result_index=index)}
+            for index, block in enumerate(results, 1)
+        ]})
+    except (TypeError, ValueError) as error:
+        return jsonify({"error": str(error)}), 400
 
 
 @app.get("/workshop")

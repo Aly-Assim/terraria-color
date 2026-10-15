@@ -126,7 +126,7 @@
         if (selected) selected.classList.remove('is-selected');
         selected = card;
         selected.classList.add('is-selected');
-        trigger = button;
+        trigger = button.inspectorReturn || button;
         const title = document.createElement('h2');
         title.id = 'inspectorTitle';
         title.textContent = card.querySelector('.card-name').textContent;

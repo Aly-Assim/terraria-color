@@ -18,11 +18,13 @@
   let mode = 'draw';
   let lineStart = null;
   let lineSnapshot = null;
+  let requestNumber = 0;
 
   function saveCanvas() {
     try { sessionStorage.setItem(storageKey, canvas.toDataURL('image/png')); } catch (_) { /* Session persistence is optional. */ }
   }
   function clearCanvas(forget = true) {
+    requestNumber++;
     context.fillStyle = '#fff';
     context.fillRect(0, 0, 48, 48);
     if (forget) try { sessionStorage.removeItem(storageKey); } catch (_) { /* Canvas still works without storage. */ }
@@ -64,6 +66,9 @@
     }
   }
   canvas.addEventListener('pointerdown', event => {
+    requestNumber++;
+    results.replaceChildren(); empty.hidden = false; status.textContent = ''; count.textContent = t('Aucun résultat');
+    searchButton.disabled = false;
     drawing = true; canvas.setPointerCapture(event.pointerId);
     if (mode === 'line') { lineStart = point(event); lineSnapshot = context.getImageData(0, 0, 48, 48); previewLine(event); }
     else paint(event);
@@ -80,11 +85,13 @@
     const rgba = context.getImageData(0, 0, 48, 48).data;
     const pixels = Array.from({length: 48 * 48}, (_, index) => rgba[index * 4]);
     if (pixels.every(value => value === 255)) { status.textContent = t('Dessinez quelque chose avant de rechercher.'); return; }
+    const sequence = ++requestNumber;
     searchButton.disabled = true; status.textContent = t('Recherche…');
     try {
       const edgeMethod = document.querySelector('input[name="edge_method"]:checked').value;
       const response = await fetch('/api/sketch-search/match', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({pixels, k: Number(resultCount.value), edge_method: edgeMethod})});
       const data = await response.json();
+      if (sequence !== requestNumber) return;
       if (!response.ok) throw new Error(data.code === 'empty_sketch' ? t('Dessinez quelque chose avant de rechercher.') : (data.error || t('La recherche a échoué.')));
       results.replaceChildren();
       for (const match of data.results) {
@@ -99,8 +106,8 @@
       empty.hidden = true;
       count.textContent = `${data.results.length} ${t(data.results.length === 1 ? 'résultat' : 'résultats')}`;
       status.textContent = t('Recherche terminée.');
-    } catch (error) { status.textContent = error.message; }
-    finally { searchButton.disabled = false; }
+    } catch (error) { if (sequence === requestNumber) status.textContent = error.message; }
+    finally { if (sequence === requestNumber) searchButton.disabled = false; }
   });
   document.addEventListener('languagechange', () => { if (!results.children.length) count.textContent = t('Aucun résultat'); });
   clearCanvas(false); setMode('draw');

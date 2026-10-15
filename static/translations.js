@@ -1,6 +1,92 @@
 /* Central UI copy. Dataset names and category values are never translated. */
 window.TerrariaTranslations = {
   "labels": {
+    "Masquer les aides": {"fr": "Masquer les aides", "en": "Hide help"},
+    "Afficher les aides": {"fr": "Afficher les aides", "en": "Show help"},
+    "Renommer la palette": {"fr": "Renommer la palette", "en": "Rename palette"},
+    "Exporter le code": {"fr": "Exporter le code", "en": "Export code"},
+    "Importer un code": {"fr": "Importer un code", "en": "Import code"},
+    "Code à partager": {"fr": "Code à partager", "en": "Share code"},
+    "Copier le code": {"fr": "Copier le code", "en": "Copy code"},
+    "Coller un code de palette": {"fr": "Coller un code de palette", "en": "Paste a palette code"},
+    "Importer": {"fr": "Importer", "en": "Import"},
+    "Fermer": {"fr": "Fermer", "en": "Close"},
+    "Code copié.": {"fr": "Code copié.", "en": "Code copied."},
+    "Copie automatique indisponible. Copiez le code sélectionné.": {"fr": "Copie automatique indisponible. Copiez le code sélectionné.", "en": "Automatic copy unavailable. Copy the selected code."},
+    "Palette importée.": {"fr": "Palette importée.", "en": "Palette imported."},
+    "Collez un code de palette.": {"fr": "Collez un code de palette.", "en": "Paste a palette code."},
+    "Code de palette trop long.": {"fr": "Code de palette trop long.", "en": "Palette code is too long."},
+    "Préfixe de code inconnu.": {"fr": "Préfixe de code inconnu.", "en": "Unknown code prefix."},
+    "Code de palette invalide.": {"fr": "Code de palette invalide.", "en": "Invalid palette code."},
+    "Code de palette corrompu.": {"fr": "Code de palette corrompu.", "en": "Corrupted palette code."},
+    "Version de code non prise en charge.": {"fr": "Version de code non prise en charge.", "en": "Unsupported code version."},
+    "Nom de palette invalide.": {"fr": "Nom de palette invalide.", "en": "Invalid palette name."},
+    "Couleurs de palette invalides (1 à 256 HEX #RRGGBB).": {"fr": "Couleurs de palette invalides (1 à 256 HEX #RRGGBB).", "en": "Invalid palette colors (1 to 256 HEX #RRGGBB)."},
+    "Supprimer la palette": {"fr": "Supprimer la palette", "en": "Delete palette"},
+    "Nom de la palette": {"fr": "Nom de la palette", "en": "Palette name"},
+    "Enregistrer": {"fr": "Enregistrer", "en": "Save"},
+    "Annuler": {"fr": "Annuler", "en": "Cancel"},
+    "Confirmer la suppression": {"fr": "Confirmer la suppression", "en": "Confirm deletion"},
+    "Supprimer cette palette et ses associations ?": {"fr": "Supprimer cette palette et ses associations ?", "en": "Delete this palette and its associations?"},
+    "Donnez un nom à cette palette.": {"fr": "Donnez un nom à cette palette.", "en": "Enter a name for this palette."},
+    "Palette source": {"fr": "Palette source", "en": "Source palette"},
+    "matériau": {"fr": "matériau", "en": "material"},
+    "Palette size must be between 1 and 256.": {"fr": "La palette doit contenir entre 1 et 256 couleurs.", "en": "Palette size must be between 1 and 256."},
+    "Colors per source must be between 1 and 256.": {"fr": "Le nombre de couleurs par source doit être compris entre 1 et 256.", "en": "Colors per source must be between 1 and 256."},
+    "An augmented palette cannot exceed 256 colors.": {"fr": "Une palette augmentée ne peut pas dépasser 256 couleurs.", "en": "An augmented palette cannot exceed 256 colors."},
+    "Choose a non-empty source palette.": {"fr": "Choisissez une palette source non vide.", "en": "Choose a non-empty source palette."},
+    "Steps must be finite numbers between -1 and 1.": {"fr": "Les pas doivent être des nombres compris entre -1 et 1.", "en": "Steps must be finite numbers between -1 and 1."},
+    "Color must be encoded as hexadecimal #RRGGBB, for example #336699.": {"fr": "La couleur doit être au format HEX #RRGGBB, par exemple #336699.", "en": "Color must be encoded as hexadecimal #RRGGBB, for example #336699."},
+    "Palette Create": {"fr": "Palette Create", "en": "Palette Create"},
+    "Brouillon local": {"fr": "Brouillon local", "en": "Local draft"},
+    "Créez une palette, choisissez une couleur, puis comparez les matériaux.": {"fr": "Créez une palette, choisissez une couleur, puis comparez les matériaux.", "en": "Create a palette, choose a color, then compare materials."},
+    "Créer une palette": {"fr": "Créer une palette", "en": "Create a palette"},
+    "Mode": {"fr": "Mode", "en": "Mode"},
+    "Analogous": {"fr": "Analogues", "en": "Analogous"},
+    "Complementary": {"fr": "Complémentaires", "en": "Complementary"},
+    "Couleur seed (facultative)": {"fr": "Couleur initiale (facultative)", "en": "Seed color (optional)"},
+    "Taille de palette": {"fr": "Taille de la palette", "en": "Palette size"},
+    "Pas de luminosité": {"fr": "Pas de luminosité", "en": "Lightness step"},
+    "Pas vert / rouge": {"fr": "Pas vert / rouge", "en": "Green/red step"},
+    "Pas bleu / jaune": {"fr": "Pas bleu / jaune", "en": "Blue/yellow step"},
+    "Générer": {"fr": "Générer", "en": "Generate"},
+    "Reroll seed": {"fr": "Nouvelle couleur initiale", "en": "Reroll seed"},
+    "Palette manuelle": {"fr": "Palette manuelle", "en": "Manual palette"},
+    "Palette courante": {"fr": "Palette courante", "en": "Current palette"},
+    "Chaque palette temporaire expire 24 h après sa dernière modification. Exporte son code pour la conserver.": {"fr": "Chaque palette temporaire expire 24 h après sa dernière modification. Exporte son code pour la conserver.", "en": "Temporary palettes expire 24 hours after their last edit. Export a code to keep yours."},
+    "Palettes de cette session": {"fr": "Palettes de cette session", "en": "Palettes in this session"},
+    "Couleurs de la palette": {"fr": "Couleurs de la palette", "en": "Palette colors"},
+    "Ajouter ou modifier une couleur HEX": {"fr": "Ajouter ou modifier une couleur HEX", "en": "Add or edit a HEX color"},
+    "Modifier": {"fr": "Modifier", "en": "Edit"},
+    "Supprimer": {"fr": "Supprimer", "en": "Delete"},
+    "Déplacer à gauche": {"fr": "Déplacer à gauche", "en": "Move left"},
+    "Déplacer à droite": {"fr": "Déplacer à droite", "en": "Move right"},
+    "Augmenter cette palette": {"fr": "Augmenter cette palette", "en": "Augment this palette"},
+    "Chaque couleur source produit une sous-palette. Les pas laissés vides sont tirés une fois et partagés.": {"fr": "Chaque couleur source produit une sous-palette. Les pas laissés vides sont tirés une fois et partagés.", "en": "Each source color produces a sub-palette. Blank steps are sampled once and shared."},
+    "Couleurs par source": {"fr": "Couleurs par source", "en": "Colors per source"},
+    "Pas de luminosité (facultatif)": {"fr": "Pas de luminosité (facultatif)", "en": "Lightness step (optional)"},
+    "Pas vert / rouge (facultatif)": {"fr": "Pas vert / rouge (facultatif)", "en": "Green/red step (optional)"},
+    "Pas bleu / jaune (facultatif)": {"fr": "Pas bleu / jaune (facultatif)", "en": "Blue/yellow step (optional)"},
+    "Augmenter": {"fr": "Augmenter", "en": "Augment"},
+    "Reroll steps": {"fr": "Nouveaux pas", "en": "Reroll steps"},
+    "Matériaux Terraria": {"fr": "Matériaux Terraria", "en": "Terraria materials"},
+    "Choisissez une couleur dans la palette.": {"fr": "Choisissez une couleur dans la palette.", "en": "Choose a color from the palette."},
+    "Matériaux associés": {"fr": "Matériaux associés", "en": "Associated materials"},
+    "Tout ajouter au Workshop": {"fr": "Tout ajouter au Workshop", "en": "Add all to Workshop"},
+    "matériau ajouté au Workshop.": {"fr": "matériau ajouté au Workshop.", "en": "material added to Workshop."},
+    "matériaux ajoutés au Workshop.": {"fr": "matériaux ajoutés au Workshop.", "en": "materials added to Workshop."},
+    "Ces matériaux sont déjà dans le Workshop.": {"fr": "Ces matériaux sont déjà dans le Workshop.", "en": "These materials are already in Workshop."},
+    "Choisissez une couleur pour lancer la recherche.": {"fr": "Choisissez une couleur pour lancer la recherche.", "en": "Choose a color to start searching."},
+    "Palette augmentée": {"fr": "Palette augmentée", "en": "Augmented palette"},
+    "matériaux": {"fr": "matériaux", "en": "materials"},
+    "Brouillon local indisponible.": {"fr": "Brouillon local indisponible.", "en": "Local draft unavailable."},
+    "La requête a échoué.": {"fr": "La requête a échoué.", "en": "The request failed."},
+    "Aucun matériau associé à cette couleur.": {"fr": "Aucun matériau associé à cette couleur.", "en": "No materials associated with this color."},
+    "Détails": {"fr": "Détails", "en": "Details"},
+    "Associer à cette couleur": {"fr": "Associer à cette couleur", "en": "Associate with this color"},
+    "Retirer de cette couleur": {"fr": "Retirer de cette couleur", "en": "Remove from this color"},
+    "Pas utilisés": {"fr": "Pas utilisés", "en": "Steps used"},
+    "Saisissez une couleur HEX à six chiffres.": {"fr": "Saisissez une couleur HEX à six chiffres.", "en": "Enter a six-digit HEX color."},
     "Matériaux": {
       "fr": "Matériaux",
       "en": "Materials"
@@ -236,6 +322,10 @@ window.TerrariaTranslations = {
     "Dispersion normalisée": {
       "fr": "Dispersion normalisée",
       "en": "Normalized dispersion"
+    },
+    "Dispersion": {
+      "fr": "Dispersion",
+      "en": "Dispersion"
     },
     "Dispersion OKLab": {
       "fr": "Dispersion OKLab",
@@ -650,6 +740,42 @@ window.TerrariaTranslations = {
     }
   },
   "help": {
+    "palette_mode": {
+      "fr": {"label": "Mode de génération", "text": "Analogues : progression centrée sur la couleur initiale dans les trois axes OKLab. Complémentaires : échantillons d’une ligne chromatique aléatoire dans le plan a/b, avec la luminosité de la couleur initiale ; les pas sont ignorés."},
+      "en": {"label": "Generation mode", "text": "Analogous: a progression centered on the seed across the three OKLab axes. Complementary: samples from a random chromatic line in the a/b plane at the seed’s lightness; steps are ignored."}
+    },
+    "palette_seed": {
+      "fr": {"label": "Couleur initiale", "text": "Couleur HEX de départ. Si le champ est vide, une couleur aléatoire est choisie. Relancer la seed choisit une nouvelle couleur initiale."},
+      "en": {"label": "Seed color", "text": "Starting HEX color. Leave blank to choose one at random. Reroll seed selects a new starting color."}
+    },
+    "palette_size": {
+      "fr": {"label": "Taille de la palette", "text": "Nombre de couleurs à générer, de 1 à 256. En mode Analogues, la progression est centrée autour de la couleur initiale."},
+      "en": {"label": "Palette size", "text": "Number of colors to generate, from 1 to 256. In Analogous mode, the progression is centered on the seed color."}
+    },
+    "palette_lightness": {
+      "fr": {"label": "Pas de luminosité", "text": "Variation de la coordonnée L d’OKLab entre deux couleurs successives en mode Analogues. Une valeur négative inverse la progression."},
+      "en": {"label": "Lightness step", "text": "Change in OKLab L between adjacent colors in Analogous mode. A negative value reverses the progression."}
+    },
+    "palette_green_red": {
+      "fr": {"label": "Pas vert / rouge", "text": "Variation de la coordonnée a d’OKLab entre deux couleurs successives en mode Analogues. Elle déplace la couleur sur l’axe vert–rouge."},
+      "en": {"label": "Green/red step", "text": "Change in OKLab a between adjacent colors in Analogous mode, moving along the green–red axis."}
+    },
+    "palette_blue_yellow": {
+      "fr": {"label": "Pas bleu / jaune", "text": "Variation de la coordonnée b d’OKLab entre deux couleurs successives en mode Analogues. Elle déplace la couleur sur l’axe bleu–jaune."},
+      "en": {"label": "Blue/yellow step", "text": "Change in OKLab b between adjacent colors in Analogous mode, moving along the blue–yellow axis."}
+    },
+    "palette_factor": {
+      "fr": {"label": "Couleurs par source", "text": "Chaque couleur de la palette source produit ce nombre de couleurs Analogues. Le total est le nombre de sources multiplié par ce facteur, avec un maximum de 256."},
+      "en": {"label": "Colors per source", "text": "Each source color produces this many Analogous colors. The total is the source count multiplied by this factor, up to 256."}
+    },
+    "palette_augment_steps": {
+      "fr": {"label": "Pas d’augmentation", "text": "Pas OKLab de cet axe pour chaque sous-palette. Si le champ est vide, un pas aléatoire est tiré une seule fois pour toute l’augmentation et partagé entre les sources."},
+      "en": {"label": "Augmentation step", "text": "OKLab step on this axis for each sub-palette. If blank, one random step is sampled for the whole augmentation and shared across all sources."}
+    },
+    "palette_reroll_augment": {
+      "fr": {"label": "Relancer l’augmentation", "text": "Relance la même palette source avec les mêmes paramètres. Les pas laissés vides sont retirés au hasard ; le résultat remplace la palette augmentée courante."},
+      "en": {"label": "Reroll augmentation", "text": "Uses the same source palette and settings again. Blank steps are resampled; the result replaces the current augmented palette."}
+    },
     "average": {
       "fr": {
         "label": "Couleur moyenne",

@@ -25,8 +25,9 @@
         <a class="brand" href="{{ url_for('index') }}">Terraria Color<span class="brand-divider" aria-hidden="true">/</span><span class="brand-context"><span data-i18n>Matériaux</span></span></a>
         <nav class="app-nav" aria-label="Navigation principale" data-i18n-aria-label="Navigation principale">
             <a href="{{ url_for('workshop') }}" {% if mode == 'workshop' %}aria-current="page"{% endif %}>Workshop</a>
-            <a href="{{ url_for('index', mode='color') }}" {% if mode not in ['workshop', 'sketch'] %}aria-current="page"{% endif %} data-i18n>Recherche couleur</a>
+            <a href="{{ url_for('index', mode='color') }}" {% if mode not in ['workshop', 'sketch', 'palette'] %}aria-current="page"{% endif %} data-i18n>Recherche couleur</a>
             <a href="{{ url_for('sketch_search') }}" {% if mode == 'sketch' %}aria-current="page"{% endif %}>Sketch Search</a>
+            <a href="{{ url_for('palette_create') }}" {% if mode == 'palette' %}aria-current="page"{% endif %} data-i18n>Palette Create</a>
         </nav>
         <div class="top-actions">
             <div class="language-switch" role="group" aria-label="Langue" data-i18n-aria-label="Langue" hidden><button type="button" data-language="fr" aria-label="Français" lang="fr">FR</button><button type="button" data-language="en" aria-label="English" lang="en">EN</button></div>
@@ -68,7 +69,7 @@
             <section id="results" class="results" aria-labelledby="resultsTitle" tabindex="-1">
                 <div class="results-toolbar"><div><div class="results-title"><h1 id="resultsTitle"><span data-i18n>{{ 'Résultats' if mode in ['catalog', 'color'] else 'Explorer les matériaux' }}</span></h1>{% if mode in ['catalog', 'color'] %}<span class="result-count" data-i18n>{{ results|length }} résultat(s)</span>{% endif %}</div></div><span class="toolbar-note"><span data-i18n>{{ 'Classés par score' if mode == 'color' and color_mode == 'average' else 'Classés par distance' if mode == 'color' else 'Blocs / Murs' }}</span></span></div>
                 {% if mode in ['catalog', 'color'] %}<div class="search-summary">
-                    {% if mode == 'catalog' %}<span><span data-i18n>Recherche</span> <strong>« {{ catalog_query }} »</strong></span>{% else %}{% if target_rgb %}<span class="target-color"><i class="swatch" style="--swatch: {{ color_value }}" aria-hidden="true"></i><strong class="mono">{{ color_value }}</strong></span>{% endif %}<span data-i18n>{{ 'Moyenne' if color_mode == 'average' else 'Dominante' }}</span><span data-i18n>{{ selected_paint_name }}</span>{% if color_mode == 'average' %}<span data-i18n>Dispersion {{ dispersion_weight }} %</span>{% endif %}{% endif %}<span data-i18n>{{ object_types[object_type] }}</span>
+                    {% if mode == 'catalog' %}<span><span data-i18n>Recherche</span> <strong>« {{ catalog_query }} »</strong></span>{% else %}{% if target_rgb %}<span class="target-color"><i class="swatch" style="--swatch: {{ color_value }}" aria-hidden="true"></i><strong class="mono">{{ color_value }}</strong></span>{% endif %}<span data-i18n>{{ 'Moyenne' if color_mode == 'average' else 'Dominante' }}</span><span data-i18n>{{ selected_paint_name }}</span>{% if color_mode == 'average' %}<span><span data-i18n>Dispersion</span> {{ dispersion_weight }} %</span>{% endif %}{% endif %}<span data-i18n>{{ object_types[object_type] }}</span>
                 </div>{% endif %}
                 {% if error %}<div class="message error" role="alert" data-i18n>{{ error }}</div>{% endif %}
                 {% if results %}<div class="cards">{% for block in results %}{% set result_index = loop.index %}{% include 'partials_card.html' %}{% endfor %}</div>

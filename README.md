@@ -221,6 +221,10 @@ The external workbook used during catalog acquisition is not distributed with th
 
 ## License and third-party material
 
+### Palette Create — Credits
+
+The Analogous and Complementary palette generation, OKLab conversion, and palette augmentation code come from [Color Palette Changer](https://github.com/aa196883/color-palette-changer) by **@aa196883**. Terraria Color adapts the imports and provides its own Flask API, Color Search integration, and per-color material associations. The supplied source ZIP did not contain an identifiable license; redistribution permission must be confirmed with the original author before publication. Local testing is possible at `/palette-create`.
+
 Original Terraria Color source code is licensed under the MIT License. See `LICENSE`.
 
 Terraria game assets, names, trademarks, external datasets, and derivative material based on third-party assets are not covered by that MIT license.
