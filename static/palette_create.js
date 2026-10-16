@@ -258,7 +258,7 @@
         const palette = current(); if (!palette?.swatches.length) return;
         try {
             const fallback = t(palette.kind === 'manual' ? 'Palette manuelle' : palette.kind === 'augmented' ? 'Palette augmentée' : palette.kind === 'analogous' ? 'Analogous' : 'Complementary');
-            $('paletteExportCode').value = share.exportCode(palette.name || fallback, palette.swatches.map(item => item.hex));
+            $('paletteExportCode').value = share.exportCode(palette.name || fallback, palette.swatches);
             closeSharePanels(); $('paletteCopyStatus').textContent = ''; $('exportPalettePanel').hidden = false;
             $('paletteExportCode').focus(); $('paletteExportCode').select(); notice('');
         } catch (error) { notice(t(error.message), true); }
@@ -274,10 +274,26 @@
         $('importPalettePanel').hidden = false; $('paletteImportCode').focus();
     });
     $('cancelImportPalette').addEventListener('click', closeSharePanels);
-    $('confirmImportPalette').addEventListener('click', () => {
+    $('confirmImportPalette').addEventListener('click', async () => {
         try {
-            const {name, colors} = share.importCode($('paletteImportCode').value);
-            newPalette(colors, 'manual', null, {name});
+            const {name, swatches: importedSwatches} = share.importCode($('paletteImportCode').value);
+            const references = importedSwatches.flatMap(swatch => swatch.materials);
+            let resolved = [];
+            if (references.length) resolved = (await post('/api/palette-create/materials', {items: references})).items;
+            const materialMap = new Map(resolved.map(item => [`${item.local_id}:${item.paint_id}`, item]));
+            const palette = {
+                id: uid(), kind: 'manual', sourceId: null, name,
+                swatches: importedSwatches.map(swatch => ({
+                    id: uid(), hex: swatch.hex.toLowerCase(),
+                    items: swatch.materials.map(([localId, paintId]) => ({...materialMap.get(`${localId}:${paintId}`)})),
+                })),
+            };
+            if (palette.swatches.some(swatch => swatch.items.some(item => !item.local_id && item.local_id !== 0))) throw new Error('Impossible de restaurer les matériaux de la palette.');
+            expiry.touch(palette);
+            state.palettes.push(palette);
+            state.activePaletteId = palette.id;
+            state.activeSwatchId = palette.swatches[0]?.id || null;
+            save(); draw(); search();
             closeSharePanels(); notice(t('Palette importée.'));
         } catch (error) { $('paletteImportError').textContent = t(error.message); }
     });

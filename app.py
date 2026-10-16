@@ -1037,6 +1037,56 @@ def palette_create_search():
         return jsonify({"error": str(error)}), 400
 
 
+@app.post("/api/palette-create/materials")
+def palette_create_materials():
+    payload = request.get_json(silent=True)
+    references = payload.get("items") if isinstance(payload, dict) else None
+    if not isinstance(references, list) or len(references) > 4096:
+        return jsonify({"error": "Références de matériaux invalides."}), 400
+
+    clean_references = []
+    for reference in references:
+        if (
+            not isinstance(reference, list) or len(reference) != 2
+            or not all(isinstance(value, int) and not isinstance(value, bool) for value in reference)
+            or reference[0] < 0 or reference[1] not in PAINTS
+        ):
+            return jsonify({"error": "Références de matériaux invalides."}), 400
+        clean_references.append(tuple(reference))
+
+    unique_local_ids = list(dict.fromkeys(local_id for local_id, _ in clean_references))
+    rows_by_id = {}
+    connection = connect_db()
+    try:
+        for offset in range(0, len(unique_local_ids), 500):
+            batch = unique_local_ids[offset:offset + 500]
+            placeholders = ",".join("?" for _ in batch)
+            rows = connection.execute(
+                base_select_query(connection) + f" WHERE o.local_id IN ({placeholders})",
+                batch,
+            ).fetchall()
+            rows_by_id.update({row["local_id"]: row for row in rows})
+    finally:
+        connection.close()
+
+    if any(local_id not in rows_by_id for local_id, _ in clean_references):
+        return jsonify({"error": "Un matériau de la palette est introuvable."}), 400
+
+    items = []
+    for local_id, paint_id in clean_references:
+        row = rows_by_id[local_id]
+        items.append({
+            "local_id": local_id,
+            "paint_id": paint_id,
+            "name": row["name"],
+            "paint_name": PAINTS[paint_id][1],
+            "image_url": url_for(
+                "serve_painted_image", local_id=local_id, paint_id=paint_id,
+            ),
+        })
+    return jsonify({"items": items})
+
+
 @app.get("/workshop")
 def workshop():
     return render_template(
