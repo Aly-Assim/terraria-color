@@ -9,6 +9,7 @@
     // The selected swatch owns the target color; the existing Color Search form owns its filters.
     $('colorInput').disabled = true; $('colorPicker').disabled = true;
     const swatches = $('paletteSwatches'), results = $('paletteResults'), selected = $('paletteSelected');
+    const manualHex = $('manualHex'), manualPicker = $('manualColorPicker');
     const message = $('paletteMessage');
     let state = {palettes: [], activePaletteId: null, activeSwatchId: null, lastAugment: null};
     let helpVisible = true;
@@ -68,7 +69,7 @@
     function setActive(hex) {
         $('colorInput').value = hex;
         $('colorInput').dispatchEvent(new Event('input', {bubbles: true}));
-        $('manualHex').value = hex;
+        manualHex.value = hex; manualPicker.value = hex;
         $('activeColorLabel').innerHTML = '';
         const chip = document.createElement('i'); chip.className = 'swatch'; chip.style.setProperty('--swatch', hex);
         const code = document.createElement('strong'); code.className = 'mono'; code.textContent = hex;
@@ -214,7 +215,9 @@
             notice(`${t('Pas utilisés')}: ${data.steps.map(v => v.toFixed(5)).join(' / ')}`);
         } catch (error) { notice(error.message, true); }
     }
-    function manualColor() { const hex = normalize($('manualHex').value); if (!hex) notice(t('Saisissez une couleur HEX à six chiffres.'), true); return hex; }
+    function manualColor() { const hex = normalize(manualHex.value); if (!hex) notice(t('Saisissez une couleur HEX à six chiffres.'), true); return hex; }
+    manualPicker.addEventListener('input', () => { manualHex.value = manualPicker.value; notice(''); });
+    manualHex.addEventListener('input', () => { const hex = normalize(manualHex.value); if (hex) { manualPicker.value = hex; notice(''); } });
     generateForm.addEventListener('submit', event => { event.preventDefault(); generate(); });
     $('rerollSeed').addEventListener('click', () => generate(true));
     generateForm.elements.mode.addEventListener('change', () => {
