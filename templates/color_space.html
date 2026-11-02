@@ -1,0 +1,69 @@
+{% extends 'index.html' %}
+{% block extra_assets %}
+<link rel="stylesheet" href="{{ url_for('static', filename='color_space.css') }}">
+<script src="https://cdn.plot.ly/plotly-4.1.1.min.js" charset="utf-8" defer></script>
+<script src="{{ url_for('static', filename='color_space.js') }}" defer></script>
+{% endblock %}
+{% block catalog_panel %}{% endblock %}
+{% block color_panel %}{% endblock %}
+{% block method_help %}{% endblock %}
+{% block results_content %}
+<section id="results" class="color-space-page" aria-labelledby="colorSpaceTitle" tabindex="-1">
+  <div class="results-toolbar color-space-toolbar">
+    <div>
+      <div class="results-title"><h1 id="colorSpaceTitle"{% if color_space_picker %} data-i18n{% endif %}>{{ 'Choisir une couleur Terraria' if color_space_picker and color_space_target == 'manual' else 'Choisir une seed Terraria' if color_space_picker else 'Color Space Explorer' }}</h1><span id="colorSpaceCount" class="result-count">Chargement…</span></div>
+      <p class="color-space-intro" data-i18n>{{ 'Cliquez sur un point, vérifiez le matériau, puis utilisez sa couleur.' if color_space_picker and color_space_target == 'manual' else 'Cliquez sur un point, vérifiez le matériau, puis utilisez sa couleur comme seed.' if color_space_picker else 'Explorez les couleurs moyennes des blocs Terraria dans l’espace perceptuel OKLab.' }}</p>
+    </div>
+    <div class="color-space-toolbar-actions">
+      <button id="resetColorSpaceCamera" class="quiet-button" type="button" data-i18n>Réinitialiser la vue</button>
+      {% if color_space_picker %}<a class="quiet-button" href="{{ url_for('palette_create') }}" data-i18n>Annuler</a>{% endif %}
+    </div>
+  </div>
+  <div class="color-space-meta" aria-live="polite">
+    <span id="colorSpaceExcluded"></span>
+    <span data-i18n>{{ 'Glissez pour tourner · molette pour zoomer · cliquez sur un point pour le sélectionner.' if color_space_picker else 'Glissez pour tourner · molette pour zoomer · cliquez sur un point pour les détails.' }}</span>
+  </div>
+  <div class="color-space-controls">
+    <fieldset id="colorSpacePaint" class="color-space-paints">
+      <legend data-i18n>Textures affichées</legend>
+      <label class="color-space-paint color-space-paint-all">
+        <input type="checkbox" value="all">
+        <span data-i18n>Toutes les textures</span>
+      </label>
+      <div class="color-space-paint-list">
+        <label class="color-space-paint">
+          <input type="checkbox" value="original" checked>
+          <span data-i18n>Textures originales</span>
+        </label>
+        {% for paint in paint_options if paint.id != 0 %}
+        <label class="color-space-paint">
+          <input type="checkbox" value="{{ paint.id }}">
+          <span>P{{ '%02d'|format(paint.id) }} · {{ paint.name }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+    <div class="color-space-views" role="group" aria-label="Vues de caméra" data-i18n-aria-label="Vues de caméra">
+      <span data-i18n>Vue</span>
+      <button class="quiet-button" type="button" data-color-space-view="initial" aria-pressed="true" title="Vue 3D" data-i18n-title="Vue 3D">3D</button>
+      <button class="quiet-button" type="button" data-color-space-view="ab" aria-pressed="false" title="Vue du plan a/b" data-i18n-title="Vue du plan a/b">a/b</button>
+      <button class="quiet-button" type="button" data-color-space-view="aL" aria-pressed="false" title="Vue du plan a/L" data-i18n-title="Vue du plan a/L">a/L</button>
+      <button class="quiet-button" type="button" data-color-space-view="bL" aria-pressed="false" title="Vue du plan b/L" data-i18n-title="Vue du plan b/L">b/L</button>
+    </div>
+  </div>
+  <div id="colorSpaceMessage" class="message error" role="alert" hidden></div>
+  {% if color_space_picker %}
+  <section id="colorSpaceSelection" class="color-space-selection" aria-live="polite" hidden>
+    <i id="colorSpaceSelectionSwatch" class="color-space-selection-swatch" aria-hidden="true"></i>
+    <div class="color-space-selection-copy">
+      <strong id="colorSpaceSelectionName"></strong>
+      <span id="colorSpaceSelectionVariant"></span>
+      <code id="colorSpaceSelectionHex"></code>
+    </div>
+    <button id="useColorSpaceSeed" class="search-button" type="button" data-i18n>{{ 'Utiliser comme couleur' if color_space_target == 'manual' else 'Utiliser comme seed' }}</button>
+  </section>
+  {% endif %}
+  <div id="colorSpacePlot" class="color-space-plot" role="img" aria-label="Nuage 3D des couleurs moyennes des blocs Terraria" data-i18n-aria-label="Nuage 3D des couleurs moyennes des blocs Terraria" tabindex="0"></div>
+  <noscript><p class="error" data-i18n>Activez JavaScript pour utiliser Color Space Explorer.</p></noscript>
+</section>
+{% endblock %}

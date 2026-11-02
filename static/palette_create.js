@@ -11,6 +11,11 @@
     const swatches = $('paletteSwatches'), results = $('paletteResults'), selected = $('paletteSelected');
     const manualHex = $('manualHex'), manualPicker = $('manualColorPicker');
     const message = $('paletteMessage');
+    const seedSourceInputs = [...document.querySelectorAll('input[name="palette_seed_source"]')];
+    const seedBeforePickerKey = 'terraria-palette-seed-before-picker';
+    const pickedSeedKey = 'terraria-palette-seed-picked';
+    const manualBeforePickerKey = 'terraria-palette-manual-before-picker';
+    const pickedManualKey = 'terraria-palette-manual-picked';
     let state = {palettes: [], activePaletteId: null, activeSwatchId: null, lastAugment: null};
     let helpVisible = true;
     let requestNumber = 0;
@@ -65,6 +70,48 @@
         const button = $('togglePaletteHelp');
         button.textContent = t(helpVisible ? 'Masquer les aides' : 'Afficher les aides');
         button.setAttribute('aria-pressed', String(helpVisible));
+    }
+    function syncSeedSource() {
+        const source = seedSourceInputs.find(input => input.checked)?.value || 'custom';
+        $('chooseTerrariaSeed').hidden = source !== 'terraria';
+    }
+    function openSeedPicker() {
+        try { sessionStorage.setItem(seedBeforePickerKey, generateForm.elements.seed_color.value); } catch (_) {}
+        window.location.assign('/color-space?picker=1');
+    }
+    function openManualPicker() {
+        try { sessionStorage.setItem(manualBeforePickerKey, manualHex.value); } catch (_) {}
+        window.location.assign('/color-space?picker=1&target=manual');
+    }
+    function restoreTerrariaPickers() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const querySeed = params.has('seed') ? normalize(params.get('seed') || '') : null;
+            const picked = querySeed || sessionStorage.getItem(pickedSeedKey);
+            const previous = sessionStorage.getItem(seedBeforePickerKey);
+            const value = picked ? normalize(picked) : previous;
+            if (value !== null) generateForm.elements.seed_color.value = value || '';
+            if (picked) notice(`${t('Seed Terraria sélectionnée')}: ${value}`);
+            if (picked !== null || previous !== null) {
+                const terraria = seedSourceInputs.find(input => input.value === 'terraria');
+                if (terraria) terraria.checked = true;
+            }
+            const queryManual = params.has('manual') ? normalize(params.get('manual') || '') : null;
+            const pickedManual = queryManual || sessionStorage.getItem(pickedManualKey);
+            const previousManual = sessionStorage.getItem(manualBeforePickerKey);
+            const manualValue = pickedManual ? normalize(pickedManual) : previousManual;
+            if (manualValue !== null) {
+                manualHex.value = manualValue || '';
+                const normalizedManual = normalize(manualValue || '');
+                if (normalizedManual) manualPicker.value = normalizedManual;
+            }
+            if (pickedManual) notice(`${t('Couleur Terraria sélectionnée')}: ${manualValue}`);
+            sessionStorage.removeItem(pickedSeedKey);
+            sessionStorage.removeItem(seedBeforePickerKey);
+            sessionStorage.removeItem(pickedManualKey);
+            sessionStorage.removeItem(manualBeforePickerKey);
+            if (params.has('seed') || params.has('manual')) history.replaceState(null, '', '/palette-create');
+        } catch (_) { /* The picker remains optional if session storage is unavailable. */ }
     }
     function setActive(hex) {
         $('colorInput').value = hex;
@@ -184,6 +231,7 @@
     }
     function generationPayload(reroll = false) {
         const values = Object.fromEntries(new FormData(generateForm));
+        delete values.palette_seed_source;
         if (reroll) values.seed_color = '';
         return values;
     }
@@ -218,6 +266,9 @@
     function manualColor() { const hex = normalize(manualHex.value); if (!hex) notice(t('Saisissez une couleur HEX à six chiffres.'), true); return hex; }
     manualPicker.addEventListener('input', () => { manualHex.value = manualPicker.value; notice(''); });
     manualHex.addEventListener('input', () => { const hex = normalize(manualHex.value); if (hex) { manualPicker.value = hex; notice(''); } });
+    seedSourceInputs.forEach(input => input.addEventListener('change', syncSeedSource));
+    $('chooseTerrariaSeed').addEventListener('click', openSeedPicker);
+    $('chooseTerrariaManual').addEventListener('click', openManualPicker);
     generateForm.addEventListener('submit', event => { event.preventDefault(); generate(); });
     $('rerollSeed').addEventListener('click', () => generate(true));
     generateForm.elements.mode.addEventListener('change', () => {
@@ -352,5 +403,5 @@
         event.stopImmediatePropagation(); draw(); if (active()) search();
     }, true);
     document.addEventListener('visibilitychange', () => { if (!document.hidden && pruneExpired()) { draw(); if (active()) search(); } });
-    pruneExpired(); syncHelp(); draw(); if (active()) search();
+    pruneExpired(); syncHelp(); draw(); restoreTerrariaPickers(); syncSeedSource(); if (active()) search();
 })();

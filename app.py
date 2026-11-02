@@ -32,6 +32,133 @@ def health():
     return {"status": "ok"}
 
 
+@app.get("/color-space")
+def color_space():
+    picker = request.args.get("picker") == "1"
+    picker_target = "manual" if request.args.get("target") == "manual" else "seed"
+    return render_template(
+        "color_space.html", mode="color-space", paint_options=paint_options(),
+        color_space_picker=picker, color_space_target=picker_target,
+    )
+
+
+@app.get("/api/color-space/points")
+def color_space_points():
+    paint_filter = request.args.get("paint", "original").strip().lower()
+    if paint_filter not in {"original", "all"}:
+        try:
+            paint_id = int(paint_filter)
+        except ValueError:
+            return jsonify({"error": "Invalid paint filter."}), 400
+        if paint_id == 0 or paint_id not in PAINTS:
+            return jsonify({"error": "Invalid paint filter."}), 400
+
+    connection = connect_db()
+    try:
+        if paint_filter == "original":
+            color_map = get_color_column_map(connection)
+            if color_map is None:
+                return jsonify({"error": "Average color data is unavailable."}), 503
+            rows = connection.execute(f"""
+                SELECT
+                    o.local_id,
+                    o.name,
+                    NULL AS paint_id,
+                    NULL AS paint_name,
+                    NULL AS error,
+                    oc.{color_map["r"]} AS avg_r,
+                    oc.{color_map["g"]} AS avg_g,
+                    oc.{color_map["b"]} AS avg_b,
+                    oc.{color_map.get("hex", color_map["r"])} AS avg_hex
+                FROM objects o
+                LEFT JOIN object_colors oc ON oc.local_id = o.local_id
+                WHERE o.object_type = 'block'
+                ORDER BY o.local_id
+            """).fetchall()
+        else:
+            if not paint_color_table_ready(connection):
+                return jsonify({"error": "Painted Average color data is unavailable."}), 503
+            paint_clause = "opc.paint_id BETWEEN 1 AND 30"
+            parameters = ()
+            if paint_filter != "all":
+                paint_clause = "opc.paint_id = ?"
+                parameters = (int(paint_filter),)
+            rows = connection.execute(f"""
+                SELECT
+                    o.local_id,
+                    o.name,
+                    opc.paint_id,
+                    opc.paint_name,
+                    opc.error,
+                    opc.avg_r,
+                    opc.avg_g,
+                    opc.avg_b,
+                    opc.avg_hex
+                FROM objects o
+                JOIN object_paint_colors opc ON opc.local_id = o.local_id
+                WHERE o.object_type = 'block' AND {paint_clause}
+                ORDER BY o.local_id, opc.paint_id
+            """, parameters).fetchall()
+    finally:
+        connection.close()
+
+    points = []
+    for row in rows:
+        channels = (row["avg_r"], row["avg_g"], row["avg_b"])
+        if row["error"] is not None or any(
+            value is None or not math.isfinite(float(value))
+            or not 0 <= float(value) <= 255
+            for value in channels
+        ):
+            continue
+        rgb = tuple(int(value) for value in channels)
+        hex_value = row["avg_hex"]
+        if not (
+            isinstance(hex_value, str) and len(hex_value) == 7
+            and hex_value.startswith("#")
+            and all(character in "0123456789abcdefABCDEF" for character in hex_value[1:])
+        ):
+            hex_value = rgb_to_hex(*rgb)
+        lightness, green_red, blue_yellow = rgb_to_oklab(*rgb)
+        points.append({
+            "local_id": row["local_id"],
+            "name": row["name"],
+            "paint_id": row["paint_id"],
+            "paint_name": row["paint_name"],
+            "rgb": list(rgb),
+            "hex": hex_value,
+            "L": lightness,
+            "a": green_red,
+            "b": blue_yellow,
+        })
+
+    return jsonify({
+        "points": points,
+        "count": len(points),
+        "excluded": len(rows) - len(points),
+        "selection": paint_filter,
+    })
+
+
+@app.get("/api/color-space/item/<int:local_id>")
+def color_space_item(local_id):
+    connection = connect_db()
+    try:
+        row = connection.execute(
+            base_select_query(connection)
+            + " WHERE o.local_id = ? AND o.object_type = 'block'",
+            (local_id,),
+        ).fetchone()
+    finally:
+        connection.close()
+    if row is None:
+        abort(404)
+    return render_template(
+        "partials_card.html", block=row_to_card(row),
+        mode="color-space", result_index=1,
+    )
+
+
 @app.get("/sketch-search")
 def sketch_search():
     available_methods = [

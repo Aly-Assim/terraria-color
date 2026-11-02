@@ -19,15 +19,16 @@
     <script src="{{ url_for('static', filename='ui.js') }}" defer></script>
     {% block extra_assets %}{% endblock %}
 </head>
-<body data-mode="{{ mode }}">
+<body data-mode="{{ mode }}"{% if color_space_picker %} data-color-space-picker="true" data-color-space-target="{{ color_space_target }}"{% endif %}>
     <a class="skip-link" href="#results"><span data-i18n>Aller aux résultats</span></a>
     <header class="topbar">
         <a class="brand" href="{{ url_for('index') }}">Terraria Color<span class="brand-divider" aria-hidden="true">/</span><span class="brand-context"><span data-i18n>Matériaux</span></span></a>
         <nav class="app-nav" aria-label="Navigation principale" data-i18n-aria-label="Navigation principale">
             <a href="{{ url_for('workshop') }}" {% if mode == 'workshop' %}aria-current="page"{% endif %}>Workshop</a>
-            <a href="{{ url_for('index', mode='color') }}" {% if mode not in ['workshop', 'sketch', 'palette'] %}aria-current="page"{% endif %} data-i18n>Recherche couleur</a>
+            <a href="{{ url_for('index', mode='color') }}" {% if mode not in ['workshop', 'sketch', 'palette', 'color-space'] %}aria-current="page"{% endif %} data-i18n>Recherche couleur</a>
             <a href="{{ url_for('sketch_search') }}" {% if mode == 'sketch' %}aria-current="page"{% endif %}>Sketch Search</a>
             <a href="{{ url_for('palette_create') }}" {% if mode == 'palette' %}aria-current="page"{% endif %} data-i18n>Palette Create</a>
+            <a href="{{ url_for('color_space') }}" {% if mode == 'color-space' %}aria-current="page"{% endif %} data-i18n>Color Space</a>
         </nav>
         <div class="top-actions">
             <div class="language-switch" role="group" aria-label="Langue" data-i18n-aria-label="Langue" hidden><button type="button" data-language="fr" aria-label="Français" lang="fr">FR</button><button type="button" data-language="en" aria-label="English" lang="en">EN</button></div>
