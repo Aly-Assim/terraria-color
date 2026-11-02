@@ -159,6 +159,26 @@
         if (selection) selection.hidden = true;
     }
 
+    function useSelectedPoint() {
+        if (!selectedPoint) return;
+        try { sessionStorage.setItem(`terraria-palette-${pickerTarget}-picked`, selectedPoint.hex); } catch (_) {}
+        window.location.assign(`/palette-create?${pickerTarget}=${encodeURIComponent(selectedPoint.hex)}`);
+    }
+
+    function addPickerActionToInspector() {
+        if (!pickerMode || !useSeed) return;
+        const inspectorContent = document.getElementById('inspectorContent');
+        if (!inspectorContent) return;
+        inspectorContent.querySelector('.color-space-inspector-action')?.remove();
+        const action = document.createElement('div');
+        action.className = 'color-space-inspector-action';
+        const button = useSeed.cloneNode(true);
+        button.removeAttribute('id');
+        button.addEventListener('click', useSelectedPoint);
+        action.append(button);
+        inspectorContent.prepend(action);
+    }
+
     async function inspect(localId, paintId) {
         try {
             const url = paintId === null
@@ -175,6 +195,7 @@
             trigger.inspectorReturn = plot;
             trigger.click();
             holder.remove();
+            addPickerActionToInspector();
         } catch (error) {
             message.textContent = error.message;
             message.hidden = false;
@@ -191,9 +212,8 @@
                 if (!point) return;
                 if (pickerMode) {
                     showSelection(point);
-                } else {
-                    inspect(point.local_id, point.paint_id);
                 }
+                inspect(point.local_id, point.paint_id);
             });
             initialized = true;
             return;
@@ -287,11 +307,7 @@
         if (!window.Plotly || !initialized) return;
         Plotly.react(plot, traces(), layout(), plotConfig);
     });
-    useSeed?.addEventListener('click', () => {
-        if (!selectedPoint) return;
-        try { sessionStorage.setItem(`terraria-palette-${pickerTarget}-picked`, selectedPoint.hex); } catch (_) {}
-        window.location.assign(`/palette-create?${pickerTarget}=${encodeURIComponent(selectedPoint.hex)}`);
-    });
+    useSeed?.addEventListener('click', useSelectedPoint);
     syncStats();
     load();
 })();

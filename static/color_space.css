@@ -41,6 +41,8 @@ body[data-mode='color-space'] .content { padding: 20px 24px; }
 .color-space-selection-copy strong, .color-space-selection-copy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .color-space-selection-copy span { color: var(--text-muted); font-size: 11px; }
 .color-space-selection-copy code { color: var(--text); font: 11px/1.4 var(--mono); }
+.color-space-inspector-action { position: sticky; top: 53px; z-index: 2; margin: 0 0 12px; padding: 8px 0; background: var(--surface); border-bottom: 1px solid var(--border); }
+.color-space-inspector-action .search-button { width: 100%; justify-content: center; }
 .color-space-plot { width: 100%; height: min(76dvh, 900px); min-height: 520px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
 .color-space-plot:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
 .color-space-plot .modebar { right: 8px !important; top: 8px !important; }
