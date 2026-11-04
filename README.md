@@ -1,18 +1,23 @@
 # Terraria Color
 
-Terraria Color is a local Flask application for finding Terraria blocks, background walls, and paint combinations that match a target color.
+Terraria Color is a Flask web application for exploring Terraria materials, finding blocks and background walls by color or sketch, and building material palettes.
 
 The project combines a curated SQLite catalog, perceptual color analysis, and an offline paint renderer so builders can compare materials programmatically instead of testing combinations manually in game.
 
+**Live site:** [terraria-color.up.railway.app](https://terraria-color.up.railway.app/)
+
 ## Features
 
-- Use the interface in French or English with the FR / EN switch; your language preference is remembered.
-- Browse blocks and background walls by name or category.
-- Search by target color using Average or Dominant matching.
+- Use the interface in French or English with the FR / EN switch and choose a light or dark theme.
+- Browse blocks and background walls by name or category in Workshop.
+- Search by target color using Average or Dominant matching, then add results to Workshop.
 - Rank results with perceptual OKLab distance.
 - Optionally penalize visually varied textures with the dispersion control.
 - Filter results by Terraria paint.
 - Preview painted textures directly in the application.
+- Find visually related blocks from a 48 × 48 sketch using Sobel or Canny HOG matching.
+- Create, augment, import, and export color palettes, then associate Terraria materials with each color.
+- Explore original and painted material colors in an interactive 3D OKLab color space.
 - Use the exported painted-image dataset independently of Flask.
 - Maintain blocks and walls with dedicated validation and curation tools.
 
@@ -162,7 +167,8 @@ Terraria Color/
 ├── requirements.txt
 ├── requirements-maintenance.txt
 ├── data/
-│   └── terraria_blocks.db
+│   ├── terraria_blocks.db
+│   └── sketch_search/
 ├── images/
 │   ├── inventory/
 │   ├── world/
@@ -175,7 +181,9 @@ Terraria Color/
 ├── scripts/
 │   ├── build/
 │   ├── maintenance/
-│   └── paint/
+│   ├── paint/
+│   └── texture_signature/
+├── palette_creator/
 ├── source/
 │   └── README.md
 ├── static/
