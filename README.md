@@ -17,7 +17,7 @@ The project combines a curated SQLite catalog, perceptual color analysis, and an
 - Preview painted textures directly in the application.
 - Find visually related blocks from a 48 × 48 sketch using Sobel or Canny HOG matching.
 - Create, augment, import, and export color palettes, then associate Terraria materials with each color.
-- Explore original and painted material colors in an interactive 3D OKLab color space.
+- Explore original and painted material colors in interactive 3D OKLab, RGB, HSL, and HSV spaces.
 - Use the exported painted-image dataset independently of Flask.
 - Maintain blocks and walls with dedicated validation and curation tools.
 
@@ -111,6 +111,17 @@ This mode focuses on the visually dominant region of a texture and does not appl
 ### OKLab
 
 Search ranking uses Euclidean distance in OKLab space. Lower values represent closer perceptual matches.
+
+## Color Space Explorer
+
+Color Space Explorer plots the existing Average colors of original and painted blocks in an interactive 3D view. It supports four coordinate systems without changing the underlying material colors:
+
+- OKLab: perceptual `a`, `b`, and `L` components;
+- RGB: red, green, and blue channels from 0 to 255;
+- HSL: hue in degrees, saturation, and lightness;
+- HSV: hue in degrees, saturation, and value.
+
+The view supports rotation, zoom, axis-plane shortcuts, material details, paint filters, and selecting a Terraria color as a Palette Create seed.
 
 ## Paint renderer
 
