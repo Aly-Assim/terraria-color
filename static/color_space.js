@@ -7,6 +7,7 @@
     const message = document.getElementById('colorSpaceMessage');
     const reset = document.getElementById('resetColorSpaceCamera');
     const paint = document.getElementById('colorSpacePaint');
+    const modelSelect = document.getElementById('colorSpaceModel');
     const paintInputs = [...paint.querySelectorAll('input[type="checkbox"]')];
     const pickerMode = document.body.dataset.colorSpacePicker === 'true';
     const pickerTarget = document.body.dataset.colorSpaceTarget === 'manual' ? 'manual' : 'seed';
@@ -30,7 +31,66 @@
     let initialized = false;
     let requestNumber = 0;
     let activeView = 'initial';
+    let activeSpace = modelSelect.value;
     let selectedPoint = null;
+
+    function hslAndHsv([red, green, blue]) {
+        const r = red / 255;
+        const g = green / 255;
+        const b = blue / 255;
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const delta = max - min;
+        let hue = 0;
+        if (delta) {
+            if (max === r) hue = 60 * (((g - b) / delta) % 6);
+            else if (max === g) hue = 60 * ((b - r) / delta + 2);
+            else hue = 60 * ((r - g) / delta + 4);
+        }
+        if (hue < 0) hue += 360;
+        const lightness = (max + min) / 2;
+        const hslSaturation = delta ? delta / (1 - Math.abs(2 * lightness - 1)) : 0;
+        const hsvSaturation = max ? delta / max : 0;
+        return {
+            hsl: [hue, hslSaturation * 100, lightness * 100],
+            hsv: [hue, hsvSaturation * 100, max * 100],
+        };
+    }
+
+    const spaces = {
+        oklab: {
+            components: ['a', 'b', 'L'],
+            labels: ['a · Vert / Rouge', 'b · Bleu / Jaune', 'L · Luminosité'],
+            ranges: [[-0.35, 0.35], [-0.35, 0.35], [0, 1]],
+            values: point => [point.a, point.b, point.L],
+            precision: 4,
+        },
+        rgb: {
+            components: ['R', 'G', 'B'],
+            labels: ['R · Rouge (0–255)', 'G · Vert (0–255)', 'B · Bleu (0–255)'],
+            ranges: [[0, 255], [0, 255], [0, 255]],
+            values: point => point.rgb,
+            precision: 0,
+        },
+        hsl: {
+            components: ['H', 'S', 'L'],
+            labels: ['H · Teinte (°)', 'S · Saturation (%)', 'L · Luminosité (%)'],
+            ranges: [[0, 360], [0, 100], [0, 100]],
+            values: point => hslAndHsv(point.rgb).hsl,
+            precision: 1,
+        },
+        hsv: {
+            components: ['H', 'S', 'V'],
+            labels: ['H · Teinte (°)', 'S · Saturation (%)', 'V · Valeur (%)'],
+            ranges: [[0, 360], [0, 100], [0, 100]],
+            values: point => hslAndHsv(point.rgb).hsv,
+            precision: 1,
+        },
+    };
+
+    function currentSpace() {
+        return spaces[activeSpace];
+    }
 
     function syncStats() {
         if (!stats) {
@@ -56,11 +116,14 @@
     }
 
     function hoverTemplate() {
-        return `<b>%{customdata[1]}</b><br>%{customdata[2]}<br>${t('Couleur moyenne')}: %{customdata[3]}<br>L: %{z:.4f}<br>a: %{x:.4f}<br>b: %{y:.4f}<extra></extra>`;
+        const space = currentSpace();
+        const format = `.${space.precision}f`;
+        return `<b>%{customdata[1]}</b><br>%{customdata[2]}<br>${t('Couleur moyenne')}: %{customdata[3]}<br>${space.components[0]}: %{x:${format}}<br>${space.components[1]}: %{y:${format}}<br>${space.components[2]}: %{z:${format}}<extra></extra>`;
     }
 
     function layout() {
         const colors = theme();
+        const space = currentSpace();
         const axis = (title, range, visible = true) => ({
             title: {text: title, font: {color: colors.muted, size: 11}},
             range,
@@ -81,31 +144,32 @@
             hovermode: 'closest',
             clickmode: 'event',
             scene: {
-                xaxis: axis(t('a · Vert / Rouge'), [-0.35, 0.35], activeView !== 'bL'),
-                yaxis: axis(t('b · Bleu / Jaune'), [-0.35, 0.35], activeView !== 'aL'),
-                zaxis: axis(t('L · Luminosité'), [0, 1], activeView !== 'ab'),
+                xaxis: axis(t(space.labels[0]), space.ranges[0], activeView !== 'bL'),
+                yaxis: axis(t(space.labels[1]), space.ranges[1], activeView !== 'aL'),
+                zaxis: axis(t(space.labels[2]), space.ranges[2], activeView !== 'ab'),
                 camera: cameras[activeView],
                 dragmode: 'orbit',
                 aspectmode: 'data',
-                annotations: activeView === 'ab' ? [] : [{
+                annotations: activeSpace !== 'oklab' || activeView === 'ab' ? [] : [{
                     x: 0, y: 0, z: 1,
                     text: t('Axe neutre'),
                     showarrow: false,
                     font: {color: colors.muted, size: 10},
                 }],
             },
-            uirevision: 'color-space-v1',
+            uirevision: `color-space-${activeSpace}`,
             showlegend: false,
         };
     }
 
     function pointTrace() {
+        const coordinates = points.map(point => currentSpace().values(point));
         return {
             type: 'scatter3d',
             mode: 'markers',
-            x: points.map(point => point.a),
-            y: points.map(point => point.b),
-            z: points.map(point => point.L),
+            x: coordinates.map(values => values[0]),
+            y: coordinates.map(values => values[1]),
+            z: coordinates.map(values => values[2]),
             customdata: points.map(point => [
                 point.local_id,
                 point.name,
@@ -137,7 +201,19 @@
     }
 
     function traces() {
-        return [pointTrace(), neutralAxisTrace()];
+        return activeSpace === 'oklab' ? [pointTrace(), neutralAxisTrace()] : [pointTrace()];
+    }
+
+    function updateViewLabels() {
+        const [x, y, z] = currentSpace().components;
+        const labels = {ab: `${x}/${y}`, aL: `${x}/${z}`, bL: `${y}/${z}`};
+        viewButtons.forEach(button => {
+            if (button.dataset.colorSpaceView === 'initial') return;
+            const label = labels[button.dataset.colorSpaceView];
+            button.textContent = label;
+            button.title = label;
+            button.setAttribute('aria-label', label);
+        });
     }
 
     function updateSelectionPanel() {
@@ -294,6 +370,11 @@
 
     reset.addEventListener('click', () => setCamera('initial'));
     paint.addEventListener('change', selectPaint);
+    modelSelect.addEventListener('change', () => {
+        activeSpace = modelSelect.value;
+        updateViewLabels();
+        if (window.Plotly && initialized) Plotly.react(plot, traces(), layout(), plotConfig);
+    });
     viewButtons.forEach(button => {
         button.addEventListener('click', () => setCamera(button.dataset.colorSpaceView));
     });
@@ -308,6 +389,7 @@
         Plotly.react(plot, traces(), layout(), plotConfig);
     });
     useSeed?.addEventListener('click', useSelectedPoint);
+    updateViewLabels();
     syncStats();
     load();
 })();

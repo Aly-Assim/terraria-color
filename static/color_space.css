@@ -30,6 +30,9 @@ body[data-mode='color-space'] .content { padding: 20px 24px; }
 .color-space-paint span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .color-space-paint-all { width: fit-content; color: var(--text); font-weight: 600; }
 .color-space-paints:disabled { opacity: .6; }
+.color-space-display-controls { display: grid; justify-items: end; gap: 8px; }
+.color-space-model { display: grid; gap: 4px; min-width: 190px; color: var(--text-muted); font-size: 11px; }
+.color-space-model select { width: 100%; }
 .color-space-views { display: flex; align-items: center; gap: 5px; color: var(--text-muted); font-size: 11px; }
 .color-space-views > span { margin-right: 3px; }
 .color-space-views .quiet-button { min-width: 42px; justify-content: center; }
@@ -52,6 +55,8 @@ body[data-mode='color-space'] .content { padding: 20px 24px; }
   body[data-mode='color-space'] .content { padding: 16px 10px; }
   .color-space-toolbar { align-items: flex-start; }
   .color-space-controls { align-items: stretch; flex-direction: column; }
+  .color-space-display-controls { justify-items: start; }
+  .color-space-model { width: min(100%, 280px); }
   .color-space-paint-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .color-space-views { overflow-x: auto; padding-bottom: 2px; }
   .color-space-plot { height: 68dvh; min-height: 430px; }

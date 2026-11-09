@@ -12,7 +12,7 @@
   <div class="results-toolbar color-space-toolbar">
     <div>
       <div class="results-title"><h1 id="colorSpaceTitle"{% if color_space_picker %} data-i18n{% endif %}>{{ 'Choisir une couleur Terraria' if color_space_picker and color_space_target == 'manual' else 'Choisir une seed Terraria' if color_space_picker else 'Color Space Explorer' }}</h1><span id="colorSpaceCount" class="result-count">Chargement…</span></div>
-      <p class="color-space-intro" data-i18n>{{ 'Cliquez sur un point, vérifiez le matériau, puis utilisez sa couleur.' if color_space_picker and color_space_target == 'manual' else 'Cliquez sur un point, vérifiez le matériau, puis utilisez sa couleur comme seed.' if color_space_picker else 'Explorez les couleurs moyennes des blocs Terraria dans l’espace perceptuel OKLab.' }}</p>
+      <p class="color-space-intro" data-i18n>{{ 'Cliquez sur un point, vérifiez le matériau, puis utilisez sa couleur.' if color_space_picker and color_space_target == 'manual' else 'Cliquez sur un point, vérifiez le matériau, puis utilisez sa couleur comme seed.' if color_space_picker else 'Explorez les couleurs moyennes des blocs Terraria dans plusieurs espaces colorimétriques.' }}</p>
     </div>
     <div class="color-space-toolbar-actions">
       <button id="resetColorSpaceCamera" class="quiet-button" type="button" data-i18n>Réinitialiser la vue</button>
@@ -43,12 +43,23 @@
         {% endfor %}
       </div>
     </fieldset>
-    <div class="color-space-views" role="group" aria-label="Vues de caméra" data-i18n-aria-label="Vues de caméra">
-      <span data-i18n>Vue</span>
-      <button class="quiet-button" type="button" data-color-space-view="initial" aria-pressed="true" title="Vue 3D" data-i18n-title="Vue 3D">3D</button>
-      <button class="quiet-button" type="button" data-color-space-view="ab" aria-pressed="false" title="Vue du plan a/b" data-i18n-title="Vue du plan a/b">a/b</button>
-      <button class="quiet-button" type="button" data-color-space-view="aL" aria-pressed="false" title="Vue du plan a/L" data-i18n-title="Vue du plan a/L">a/L</button>
-      <button class="quiet-button" type="button" data-color-space-view="bL" aria-pressed="false" title="Vue du plan b/L" data-i18n-title="Vue du plan b/L">b/L</button>
+    <div class="color-space-display-controls">
+      <label class="color-space-model">
+        <span data-i18n>Espace colorimétrique</span>
+        <select id="colorSpaceModel">
+          <option value="oklab">OKLab</option>
+          <option value="rgb">RGB</option>
+          <option value="hsl">HSL</option>
+          <option value="hsv">HSV</option>
+        </select>
+      </label>
+      <div class="color-space-views" role="group" aria-label="Vues de caméra" data-i18n-aria-label="Vues de caméra">
+        <span data-i18n>Vue</span>
+        <button class="quiet-button" type="button" data-color-space-view="initial" aria-pressed="true" title="Vue 3D" data-i18n-title="Vue 3D">3D</button>
+        <button class="quiet-button" type="button" data-color-space-view="ab" aria-pressed="false">a/b</button>
+        <button class="quiet-button" type="button" data-color-space-view="aL" aria-pressed="false">a/L</button>
+        <button class="quiet-button" type="button" data-color-space-view="bL" aria-pressed="false">b/L</button>
+      </div>
     </div>
   </div>
   <div id="colorSpaceMessage" class="message error" role="alert" hidden></div>
